@@ -19,25 +19,7 @@
     <header class="site-header dashboard-header">
       <div class="container header-inner">
         <div class="logo">
-          <span class="logo-icon" aria-hidden="true">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
-            >
-              <rect width="24" height="24" rx="5" fill="#1e6fb3"></rect>
-              <path
-                d="M6.5 12.5l2 2 6-6"
-                stroke="#fff"
-                stroke-width="1.5"
-                fill="none"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></path>
-            </svg>
-          </span>
+          <span class="logo-icon" aria-hidden="true"> 🧑‍🤝‍🧑 </span>
           <span class="logo-text">eizyGroup</span>
         </div>
         <div class="header-actions">
@@ -54,6 +36,12 @@
             href="#"
             id="nav-logout-btn"
             class="btn btn-small"
+            style="
+              padding: 8px 10px;
+              border: 1px solid #35449e;
+              color: red;
+              font-weight: bolder;
+            "
             onclick="logout(); return false;"
             >Logout</a
           >
@@ -93,7 +81,14 @@
                 placeholder="Alice\nBob\nCharlie\n..."
                 rows="10"
               ></textarea>
-              <div style="margin-top: 12px">
+              <div
+                style="
+                  margin-top: 12px;
+                  background-color: #35449e;
+                  width: 150px;
+                  border-radius: 100px;
+                "
+              >
                 <label for="csv-import" class="btn btn-small btn-ghost"
                   >📥 Import CSV</label
                 >

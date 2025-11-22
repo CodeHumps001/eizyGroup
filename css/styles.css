@@ -1,13 +1,13 @@
 :root {
-  --bg: #f7fbff;
+  --bg: #eff2fb;
   --card: #ffffff;
-  --muted: #6b7280;
-  --accent: #1e6fb3; /* professional blue - WCAG AAA compliant */
-  --accent-600: #155a9a; /* darker blue for hovers - WCAG AAA compliant */
+  --muted: #757d90;
+  --accent: #3f51b5; /* Deep Indigo - WCAG AAA compliant */
+  --accent-600: #35449e; /* Darker Indigo for hovers */
   --radius: 10px;
   --container: 1280px;
-  --text: #0f1724; /* near-black for max contrast */
-  --border: rgba(15, 23, 36, 0.06);
+  --text: #171c26; /* Near-black for max contrast */
+  --border: rgba(63, 81, 181, 0.08);
 }
 
 /* 
@@ -27,7 +27,9 @@ body.dark-mode {
   --text: #f7fbff;
   --border: rgba(255, 255, 255, 0.1);
 }
-
+.topic {
+  color: #3f51b5;
+}
 /* High contrast mode support for accessibility */
 @media (prefers-contrast: more) {
   :root {
@@ -135,14 +137,19 @@ body.dark-mode .site-header {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-size: 1.6rem;
 }
 .logo-text {
   font-weight: 700;
   color: var(--accent);
-  font-size: 1.02rem;
+  font-size: 2.02rem;
+}
+.main-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 .main-nav .nav-link {
-  margin-left: 18px;
   color: var(--muted);
   text-decoration: none;
 }
@@ -163,6 +170,7 @@ body.dark-mode .site-header {
 }
 
 /* Dashboard Header */
+
 .dashboard-header .header-inner {
   justify-content: space-between;
 }
@@ -429,6 +437,10 @@ body.dark-mode .btn-icon:hover {
   }
 }
 
+.container h2 {
+  color: #3f51b580;
+}
+
 /* How to use cards */
 .cards-grid {
   display: grid;
@@ -472,6 +484,7 @@ body.dark-mode .btn-icon:hover {
 .benefit-item {
   padding: 20px 0;
 }
+
 .benefit-item h3 {
   margin: 0 0 8px;
   font-size: 1.15rem;
@@ -951,7 +964,7 @@ body.dark-mode .danger-zone {
 }
 .card {
   background: var(--card);
-  padding: 16px;
+  padding: 10px;
   border-radius: 10px;
   box-shadow: 0 8px 24px rgba(6, 10, 15, 0.04);
   border: 1px solid var(--border);
@@ -978,6 +991,7 @@ body.dark-mode .danger-zone {
 }
 .input-card textarea:focus {
   outline: none;
+  outline-color: #3f51b5;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(30, 111, 179, 0.2);
 }
@@ -1049,13 +1063,13 @@ body.dark-mode .danger-zone {
 .group-card h4 {
   margin: 0;
   font-size: 1.1rem;
-  color: var(--accent);
+  color: coral;
   font-weight: 700;
 }
 
 .group-card-count {
-  background: rgba(30, 111, 179, 0.1);
-  color: var(--accent);
+  background: #35449e;
+  color: #fff;
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 0.85rem;
@@ -1071,11 +1085,12 @@ body.dark-mode .danger-zone {
 
 .group-card li {
   padding: 8px 0;
-  color: var(--text);
+  color: #f3f3f3;
   font-size: 0.95rem;
   border-bottom: 1px solid var(--border);
   word-break: break-word;
   overflow-wrap: break-word;
+  font-weight: 700;
 }
 
 .group-card li:last-child {
@@ -1264,8 +1279,8 @@ body.dark-mode .danger-zone {
 
   /* Header adjustments */
   .header-inner {
-    padding: 14px 0;
-    flex-wrap: wrap;
+    padding: 24px 16px;
+    /* flex-wrap: wrap; */
   }
 
   .logo {
@@ -1282,7 +1297,6 @@ body.dark-mode .danger-zone {
   }
 
   .main-nav .nav-link {
-    margin-left: 16px;
     font-size: 0.95rem;
   }
 
