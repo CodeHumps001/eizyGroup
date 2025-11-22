@@ -1037,6 +1037,148 @@ class GeneratorView {
 
     resultsSection.insertAdjacentElement("afterbegin", chartContainer);
   }
+
+  /**
+   * Create and display dashboard overview with key metrics
+   */
+  createDashboardOverview(performanceMetrics, currentStatistics) {
+    const overviewContent = document.getElementById("overview-content");
+    if (!overviewContent) return;
+
+    // Clear existing content
+    overviewContent.innerHTML = "";
+
+    const hasData = performanceMetrics.totalGroupsGenerated > 0;
+
+    if (!hasData) {
+      overviewContent.innerHTML = `
+        <div class="welcome">
+          📊 Start generating groups to see your analytics and statistics here.
+        </div>
+      `;
+      return;
+    }
+
+    const avgBalance = performanceMetrics.averageBalanceScore.toFixed(1);
+    const avgDiversity = performanceMetrics.averageDiversityScore.toFixed(1);
+    const lastMetric =
+      performanceMetrics.generationHistory[
+        performanceMetrics.generationHistory.length - 1
+      ];
+
+    let balanceColor = "score-low";
+    if (avgBalance >= 70) balanceColor = "score-high";
+    else if (avgBalance >= 50) balanceColor = "score-medium";
+
+    let diversityColor = "score-low";
+    if (avgDiversity >= 70) diversityColor = "score-high";
+    else if (avgDiversity >= 50) diversityColor = "score-medium";
+
+    overviewContent.innerHTML = `
+      <div class="overview-stats">
+        <div class="overview-stat-card">
+          <div class="stat-card-label">Total Generations</div>
+          <div class="stat-card-value">${
+            performanceMetrics.totalGroupsGenerated
+          }</div>
+          <div class="stat-card-subtitle">group sets created</div>
+        </div>
+        <div class="overview-stat-card">
+          <div class="stat-card-label">Students Processed</div>
+          <div class="stat-card-value">${
+            performanceMetrics.totalStudentsProcessed
+          }</div>
+          <div class="stat-card-subtitle">across all generations</div>
+        </div>
+        <div class="overview-stat-card">
+          <div class="stat-card-label">Avg Balance Score</div>
+          <div class="stat-card-value ${balanceColor}">${avgBalance}%</div>
+          <div class="stat-card-subtitle">group size uniformity</div>
+        </div>
+        <div class="overview-stat-card">
+          <div class="stat-card-label">Avg Diversity Score</div>
+          <div class="stat-card-value ${diversityColor}">${avgDiversity}%</div>
+          <div class="stat-card-subtitle">skill distribution</div>
+        </div>
+      </div>
+
+      <div class="overview-section">
+        <h3>📈 Recent Performance</h3>
+        <div class="stats-panel">
+          <div class="stats-grid">
+            ${
+              lastMetric
+                ? `
+              <div class="stat-item">
+                <div class="stat-label">Last Balance Score</div>
+                <div class="stat-value ${
+                  lastMetric.balanceScore >= 70
+                    ? "score-high"
+                    : lastMetric.balanceScore >= 50
+                    ? "score-medium"
+                    : "score-low"
+                }">
+                  ${lastMetric.balanceScore.toFixed(1)}%
+                </div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Last Diversity Score</div>
+                <div class="stat-value ${
+                  lastMetric.diversityScore >= 70
+                    ? "score-high"
+                    : lastMetric.diversityScore >= 50
+                    ? "score-medium"
+                    : "score-low"
+                }">
+                  ${lastMetric.diversityScore.toFixed(1)}%
+                </div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Last Groups</div>
+                <div class="stat-value">${lastMetric.totalGroups}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Last Students</div>
+                <div class="stat-value">${lastMetric.totalStudents}</div>
+              </div>
+            `
+                : ""
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="overview-section">
+        <h3>💡 Tips for Better Groups</h3>
+        <div class="tips-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+          ${
+            avgBalance < 60
+              ? `
+            <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; border-left: 4px solid #ff9800;">
+              <strong>📊 Balance Score Low</strong>
+              <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem;">Try adjusting the number of groups to match your student count more evenly.</p>
+            </div>
+          `
+              : ""
+          }
+          ${
+            avgDiversity < 60
+              ? `
+            <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; border-left: 4px solid #f44336;">
+              <strong>🎯 Diversity Score Low</strong>
+              <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem;">Ensure you have a good mix of skills/levels in your student input.</p>
+            </div>
+          `
+              : ""
+          }
+          <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; border-left: 4px solid #4caf50;">
+            <strong>✨ Pro Tip</strong>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem;">Use auto-save in settings to track your generation history automatically.</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
 }
 
 /**
@@ -1824,6 +1966,11 @@ class ApplicationController {
       this.renderHistory();
     } else if (tabName === "settings") {
       this.initializeSettings();
+    } else if (tabName === "overview") {
+      this.generatorView.createDashboardOverview(
+        this.appState.getPerformanceMetrics(),
+        this.appState.getCurrentStatistics()
+      );
     }
   }
 

@@ -2550,3 +2550,45 @@ svg {
   color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
+
+/* Ad Container Styling */
+.ad-container {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1.5rem 0;
+  margin: 2rem 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 280px;
+}
+
+.ad-container .container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.ad-container ins {
+  display: block !important;
+}
+
+/* Ensure ads are responsive */
+@media (max-width: 768px) {
+  .ad-container {
+    min-height: 600px;
+    padding: 1rem 0;
+  }
+}
+
+/* Sidebar ad styling */
+.sidebar-ad {
+  display: flex;
+  justify-content: center;
+}
+
+.sidebar-ad ins {
+  display: block !important;
+}
