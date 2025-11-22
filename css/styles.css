@@ -975,7 +975,7 @@ body.dark-mode .danger-zone {
   font-weight: 600;
   margin-bottom: 10px;
   font-size: 0.95rem;
-  color: var(--text);
+  color: #;
 }
 .input-card textarea {
   width: 100%;
