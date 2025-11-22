@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="theme-color" content="#1e6fb3" />
+    <meta
+      name="description"
+      content="eizyGroup - Bias-free group generator for educators, facilitators, and team leaders. Create balanced groups instantly, no setup required."
+    />
+    <meta name="og:title" content="eizyGroup — Bias-Free Group Generator" />
+    <meta
+      name="og:description"
+      content="Smart group generation made easy. Fair, instant, and private."
+    />
+    <meta
+      name="og:image"
+      content="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 630'><rect fill='%231e6fb3' width='1200' height='630'/><text x='50%' y='50%' text-anchor='middle' dy='.3em' font-size='72' font-weight='bold' fill='%23fff' font-family='sans-serif'>eizyGroup</text><text x='50%' y='60%' text-anchor='middle' font-size='32' fill='%23eaf4ff' font-family='sans-serif'>Bias-Free Group Generator</text></svg>"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <title>eizyGroup — Bias-Free Group Generator</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect fill='%231e6fb3' width='24' height='24' rx='4'/><path fill='%23fff' d='M6.5 12.5l2 2 6-6' stroke='%23fff' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>"
+    />
+  </head>
+  <body id="app-body">
+    <!-- Skip to main content link for keyboard navigation -->
+    <a href="#landing-root" class="skip-link">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="container header-inner">
+        <div class="logo">
+          <span class="logo-icon" aria-hidden="true">
+            <!-- small badge SVG -->
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <rect width="24" height="24" rx="5" fill="#1e6fb3"></rect>
+              <path
+                d="M6.5 12.5l2 2 6-6"
+                stroke="#fff"
+                stroke-width="1.5"
+                fill="none"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>
+            </svg>
+          </span>
+          <span class="logo-text">eizyGroup</span>
+        </div>
+        <nav class="main-nav" aria-label="Main navigation">
+          <a href="#" class="nav-link" id="nav-home" aria-label="Home">Home</a>
+          <a
+            href="#"
+            class="nav-link"
+            id="nav-login"
+            aria-label="Login or account"
+            >Login</a
+          >
+          <a
+            href="dashboard.html"
+            class="nav-link"
+            id="nav-dashboard"
+            style="display: none"
+            aria-label="Dashboard"
+            >Dashboard</a
+          >
+        </nav>
+      </div>
+    </header>
+
+    <main id="landing-root">
+      <!-- Section 1: App Description -->
+      <section id="sec-hero" class="section hero-section">
+        <div class="container hero-content">
+          <div class="hero-text">
+            <h1>Smart Group Generation Made Easy</h1>
+            <p>
+              eizyGroup eliminates bias and creates balanced groups in seconds.
+              Perfect for educators, facilitators, and team leaders.
+            </p>
+            <div class="hero-buttons">
+              <a
+                href="#"
+                id="hero-cta-btn"
+                class="btn btn-primary"
+                onclick="handleHeroCTA(); return false;"
+                aria-label="Get started with eizyGroup"
+                >Get Started</a
+              >
+              <a
+                href="#sec-howtouse"
+                class="btn btn-ghost"
+                aria-label="Learn more about eizyGroup"
+                >Learn More</a
+              >
+            </div>
+          </div>
+          <div class="hero-visual">
+            <svg
+              width="400"
+              height="320"
+              viewBox="0 0 400 320"
+              xmlns="http://www.w3.org/2000/svg"
+              class="hero-image"
+            >
+              <rect width="400" height="320" rx="24" fill="#eaf4ff" />
+              <g transform="translate(80,40)">
+                <circle cx="40" cy="30" r="28" fill="#1e6fb3" opacity="0.9" />
+                <circle cx="120" cy="70" r="24" fill="#1e6fb3" opacity="0.7" />
+                <circle cx="200" cy="35" r="28" fill="#1e6fb3" opacity="0.8" />
+              </g>
+              <g transform="translate(60,140)">
+                <rect
+                  x="0"
+                  y="0"
+                  width="280"
+                  height="140"
+                  rx="12"
+                  fill="#fff"
+                  stroke="#1e6fb3"
+                  stroke-width="2"
+                />
+                <line
+                  x1="10"
+                  y1="35"
+                  x2="270"
+                  y2="35"
+                  stroke="#1e6fb3"
+                  stroke-width="1"
+                  opacity="0.3"
+                />
+                <line
+                  x1="10"
+                  y1="70"
+                  x2="270"
+                  y2="70"
+                  stroke="#1e6fb3"
+                  stroke-width="1"
+                  opacity="0.3"
+                />
+                <text
+                  x="140"
+                  y="85"
+                  text-anchor="middle"
+                  font-size="16"
+                  font-weight="bold"
+                  fill="#1e6fb3"
+                >
+                  Balanced Groups
+                </text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 2: How to Use -->
+      <section id="sec-howtouse" class="section">
+        <div class="container">
+          <h2>How to Use eizyGroup</h2>
+          <div class="cards-grid">
+            <div class="how-card">
+              <div class="card-icon">📝</div>
+              <h3>Paste Names</h3>
+              <p>Enter student or participant names, one per line.</p>
+            </div>
+            <div class="how-card">
+              <div class="card-icon">⚙️</div>
+              <h3>Configure</h3>
+              <p>Set the number of groups or students per group.</p>
+            </div>
+            <div class="how-card">
+              <div class="card-icon">✨</div>
+              <h3>Generate</h3>
+              <p>Click generate and get fair, balanced groups instantly.</p>
+            </div>
+            <div class="how-card">
+              <div class="card-icon">📋</div>
+              <h3>Export</h3>
+              <p>Copy, export, or print your results for sharing.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Why Use eizyGroup -->
+      <section id="sec-why" class="section alt-bg">
+        <div class="container">
+          <h2>Why Choose eizyGroup?</h2>
+          <div class="benefits-grid">
+            <div class="benefit-item">
+              <h3>🎯 Bias-Free Grouping</h3>
+              <p>
+                Smart algorithms ensure fair and balanced group assignments
+                without human bias.
+              </p>
+            </div>
+            <div class="benefit-item">
+              <h3>⚡ Lightning Fast</h3>
+              <p>Generate groups in seconds. No complex setup, no waiting.</p>
+            </div>
+            <div class="benefit-item">
+              <h3>🔒 Secure & Private</h3>
+              <p>
+                Your data stays yours. No tracking, no analytics, no selling.
+              </p>
+            </div>
+            <div class="benefit-item">
+              <h3>📱 Fully Responsive</h3>
+              <p>Works seamlessly on desktop, tablet, and mobile devices.</p>
+            </div>
+            <div class="benefit-item">
+              <h3>🎓 For Everyone</h3>
+              <p>Perfect for classrooms, workshops, team building, and more.</p>
+            </div>
+            <div class="benefit-item">
+              <h3>💡 Simple & Intuitive</h3>
+              <p>No training needed. Just paste names and click generate.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3.5: Trust & Security -->
+      <section
+        id="sec-trust"
+        class="section"
+        aria-label="Customer testimonials"
+      >
+        <div class="container">
+          <h2>Trusted by Educators Worldwide</h2>
+          <div class="testimonials-grid">
+            <div class="testimonial-card">
+              <div class="testimonial-image-container">
+                <img
+                  src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%231e6fb3'/%3E%3Ctext x='60' y='75' text-anchor='middle' font-size='80' fill='%23fff' font-weight='bold' font-family='sans-serif'%3ES%3C/text%3E%3C/svg%3E"
+                  alt="Sarah M., High School Teacher avatar"
+                  class="testimonial-avatar"
+                  width="80"
+                  height="80"
+                  loading="lazy"
+                />
+              </div>
+              <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+              <p class="testimonial-text">
+                "eizyGroup saved me hours every semester. The random grouping is
+                truly unbiased!"
+              </p>
+              <div class="testimonial-author">
+                Sarah M. • High School Teacher
+              </div>
+            </div>
+            <div class="testimonial-card">
+              <div class="testimonial-image-container">
+                <img
+                  src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23155a9a'/%3E%3Ctext x='60' y='75' text-anchor='middle' font-size='80' fill='%23fff' font-weight='bold' font-family='sans-serif'%3EJ%3C/text%3E%3C/svg%3E"
+                  alt="Dr. James K., University Professor avatar"
+                  class="testimonial-avatar"
+                  width="80"
+                  height="80"
+                  loading="lazy"
+                />
+              </div>
+              <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+              <p class="testimonial-text">
+                "My students love the instant results. It makes group
+                assignments fun instead of tedious."
+              </p>
+              <div class="testimonial-author">
+                Dr. James K. • University Professor
+              </div>
+            </div>
+            <div class="testimonial-card">
+              <div class="testimonial-image-container">
+                <img
+                  src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%231e6fb3'/%3E%3Ctext x='60' y='75' text-anchor='middle' font-size='80' fill='%23fff' font-weight='bold' font-family='sans-serif'%3EM%3C/text%3E%3C/svg%3E"
+                  alt="Maria L., Workshop Facilitator avatar"
+                  class="testimonial-avatar"
+                  width="80"
+                  height="80"
+                  loading="lazy"
+                />
+              </div>
+              <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+              <p class="testimonial-text">
+                "Simple, clean, and effective. This is exactly what I've been
+                looking for."
+              </p>
+              <div class="testimonial-author">
+                Maria L. • Workshop Facilitator
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3.6: Security & Privacy -->
+      <section id="sec-security" class="section alt-bg">
+        <div class="container">
+          <h2>Your Data, Your Control</h2>
+          <div class="security-grid">
+            <div class="security-item">
+              <div class="security-icon">🔐</div>
+              <h3>100% Private</h3>
+              <p>
+                All data stays on your device. We never store or access your
+                student information.
+              </p>
+            </div>
+            <div class="security-item">
+              <div class="security-icon">🚫</div>
+              <h3>No Tracking</h3>
+              <p>
+                Zero analytics, no cookies, no third-party trackers. Complete
+                privacy guaranteed.
+              </p>
+            </div>
+            <div class="security-item">
+              <div class="security-icon">⚡</div>
+              <h3>Instant Results</h3>
+              <p>
+                Processing happens instantly in your browser. No servers, no
+                delays.
+              </p>
+            </div>
+            <div class="security-item">
+              <div class="security-icon">💾</div>
+              <h3>Export Anytime</h3>
+              <p>
+                Download your group assignments as CSV for use in any tool or
+                system.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3.7: Use Cases -->
+      <section id="sec-usecases" class="section">
+        <div class="container">
+          <h2>Perfect For Any Scenario</h2>
+          <div class="usecases-grid">
+            <div class="usecase-card">
+              <div class="usecase-icon">🎓</div>
+              <h3>Classroom Groups</h3>
+              <p>
+                Create balanced project teams, study groups, or discussion teams
+                instantly.
+              </p>
+            </div>
+            <div class="usecase-card">
+              <div class="usecase-icon">👥</div>
+              <h3>Team Building</h3>
+              <p>
+                Organize workshop activities and team-building exercises without
+                bias.
+              </p>
+            </div>
+            <div class="usecase-card">
+              <div class="usecase-icon">🎯</div>
+              <h3>Event Organization</h3>
+              <p>
+                Split participants into balanced groups for breakout sessions or
+                activities.
+              </p>
+            </div>
+            <div class="usecase-card">
+              <div class="usecase-icon">📊</div>
+              <h3>Research & Testing</h3>
+              <p>
+                Create fair control and experimental groups for academic
+                research.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 4: Call to Action -->
+      <section id="sec-cta" class="section cta-section">
+        <div class="container">
+          <h2>Ready to Make Group Assignments Fair?</h2>
+          <p>Try eizyGroup now for free. Create an account to get started.</p>
+          <a
+            href="#"
+            id="cta-button"
+            class="btn btn-primary btn-large"
+            onclick="handleCTAButton(); return false;"
+            aria-label="Get started with eizyGroup now"
+            >Get Started Now</a
+          >
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer" role="contentinfo">
+      <div class="container footer-inner">
+        <div>© <span id="year"></span> eizyGroup — Campus Name</div>
+        <div>Built for fair and transparent group assignments.</div>
+      </div>
+    </footer>
+
+    <!-- Login Modal (hidden by default) -->
+    <div
+      class="modal"
+      id="login-modal"
+      aria-hidden="true"
+      role="dialog"
+      aria-labelledby="modal-title"
+      aria-modal="true"
+    >
+      <div class="modal-backdrop" id="modal-backdrop" aria-hidden="true"></div>
+      <div
+        class="modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+      >
+        <button class="modal-close" id="modal-close">×</button>
+        <h3 id="modal-title">Sign In</h3>
+        <form
+          id="login-form"
+          onsubmit="event.preventDefault(); onLoginSubmit();"
+        >
+          <label class="field">
+            <span>Email</span>
+            <input type="email" id="login-email" required />
+          </label>
+          <label class="field">
+            <span>Password</span>
+            <input type="password" id="login-password" required />
+          </label>
+          <div class="modal-actions">
+            <button class="btn btn-primary" type="submit">Sign In</button>
+            <button class="btn btn-ghost" type="button" id="modal-cancel">
+              Cancel
+            </button>
+          </div>
+        </form>
+        <div class="modal-footer">
+          Don't have an account?
+          <a
+            href="#"
+            id="switch-to-signup"
+            onclick="switchToSignup(); return false;"
+            >Sign up</a
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- Signup Modal (hidden by default) -->
+    <div
+      class="modal"
+      id="signup-modal"
+      aria-hidden="true"
+      role="dialog"
+      aria-labelledby="signup-title"
+      aria-modal="true"
+    >
+      <div
+        class="modal-backdrop"
+        id="modal-backdrop-signup"
+        aria-hidden="true"
+      ></div>
+      <div
+        class="modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="signup-title"
+      >
+        <button class="modal-close" id="modal-close-signup">×</button>
+        <h3 id="signup-title">Create Account</h3>
+        <form
+          id="signup-form"
+          onsubmit="event.preventDefault(); onSignupSubmit();"
+        >
+          <label class="field">
+            <span>Full Name</span>
+            <input type="text" id="signup-name" required />
+          </label>
+          <label class="field">
+            <span>Email</span>
+            <input type="email" id="signup-email" required />
+          </label>
+          <label class="field">
+            <span>Password</span>
+            <input type="password" id="signup-password" required />
+          </label>
+          <label class="field">
+            <span>Confirm Password</span>
+            <input type="password" id="signup-confirm" required />
+          </label>
+          <div class="modal-actions">
+            <button class="btn btn-primary" type="submit">
+              Create Account
+            </button>
+            <button
+              class="btn btn-ghost"
+              type="button"
+              id="modal-cancel-signup"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+        <div class="modal-footer">
+          Already have an account?
+          <a
+            href="#"
+            id="switch-to-login"
+            onclick="switchToLogin(); return false;"
+            >Sign in</a
+          >
+        </div>
+      </div>
+    </div>
+
+    <script src="js/app.js"></script>
+  </body>
+</html>
