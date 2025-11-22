@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="theme-color" content="#1e6fb3" />
+    <meta
+      name="description"
+      content="Frequently asked questions about eizyGroup. Find answers about features, privacy, security, technical details, troubleshooting, and more."
+    />
+    <meta name="keywords" content="eizyGroup FAQ, frequently asked questions, features, privacy, security, troubleshooting, group generator, student assignments" />
+    <meta name="author" content="eizyGroup" />
+    <meta name="robots" content="index, follow" />
+    <meta name="language" content="English" />
+    <meta name="revisit-after" content="7 days" />
+    <!-- Open Graph Tags -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="FAQ — eizyGroup" />
+    <meta property="og:description" content="Get answers to frequently asked questions about eizyGroup, including features, privacy, security, and technical support." />
+    <meta property="og:url" content="https://www.eizygroup.com/faq.html" />
+    <meta property="og:image" content="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 630'><rect fill='%231e6fb3' width='1200' height='630'/><text x='50%' y='50%' text-anchor='middle' dy='.3em' font-size='72' font-weight='bold' fill='%23fff' font-family='sans-serif'>eizyGroup</text><text x='50%' y='60%' text-anchor='middle' font-size='32' fill='%23eaf4ff' font-family='sans-serif'>Frequently Asked Questions</text></svg>" />
+    <meta property="og:site_name" content="eizyGroup" />
+    <!-- Twitter Card Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="eizyGroup FAQ" />
+    <meta name="twitter:description" content="Find answers to common questions about eizyGroup features, privacy, and support." />
+    <meta name="twitter:image" content="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 630'><rect fill='%231e6fb3' width='1200' height='630'/><text x='50%' y='50%' text-anchor='middle' dy='.3em' font-size='72' font-weight='bold' fill='%23fff' font-family='sans-serif'>eizyGroup</text><text x='50%' y='60%' text-anchor='middle' font-size='32' fill='%23eaf4ff' font-family='sans-serif'>FAQ</text></svg>" />
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://www.eizygroup.com/faq.html" />
+    <!-- Google AdSense -->
+    <meta name="google-adsense-account" content="ca-pub-2789487480341652" />
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2789487480341652"
+      crossorigin="anonymous"
+    ></script>
+    <title>FAQ — eizyGroup Frequently Asked Questions</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="preload" as="style" href="css/styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect fill='%231e6fb3' width='24' height='24' rx='4'/><path fill='%23fff' d='M6.5 12.5l2 2 6-6' stroke='%23fff' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>"
+    />
+    <!-- Structured Data (JSON-LD) for FAQs -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is eizyGroup?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "eizyGroup is a bias-free group generator designed for educators and facilitators to create fair, balanced student groups instantly."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is my data private?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, eizyGroup is GDPR and FERPA compliant. Your student data is processed locally in your browser and never stored on servers."
+          }
+        }
+      ]
+    }
+    </script>
+    <style>
+      .faq-item {
+        margin-bottom: 1.5rem;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+      .faq-item:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      .faq-question {
+        padding: 1.5rem;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 600;
+        user-select: none;
+        background: var(--bg-secondary);
+        transition: background 0.3s ease;
+      }
+      .faq-question:hover {
+        background: var(--bg-tertiary);
+      }
+      .faq-toggle {
+        font-size: 1.5rem;
+        transition: transform 0.3s ease;
+      }
+      .faq-item.active .faq-toggle {
+        transform: rotate(180deg);
+      }
+      .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+      .faq-item.active .faq-answer {
+        max-height: 500px;
+      }
+      .faq-answer-content {
+        padding: 1.5rem;
+        padding-top: 0;
+        color: var(--text-secondary);
+        line-height: 1.8;
+      }
+      .faq-category {
+        margin-top: 3rem;
+        margin-bottom: 2rem;
+        padding: 0 1rem;
+      }
+      .faq-category h3 {
+        font-size: 1.4rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--accent);
+        color: #0f1724;
+        text-align: center;
+      }
+      .faq-item {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 100%;
+      }
+      @media (max-width: 768px) {
+        .faq-category {
+          margin-top: 2rem;
+          margin-bottom: 1.5rem;
+          padding: 0 1rem;
+        }
+        .faq-category h3 {
+          font-size: 1.2rem;
+        }
+        .faq-question {
+          padding: 1rem;
+        }
+      }
+      @media (max-width: 480px) {
+        .faq-category {
+          padding: 0 0.5rem;
+          margin-top: 1.5rem;
+        }
+        .faq-category h3 {
+          font-size: 1rem;
+          margin-bottom: 1rem;
+        }
+        .faq-question span {
+          font-size: 0.95rem;
+        }
+      }
+    </style>
+    <script defer src="js/app.js"></script>
+    <noscript><link rel="stylesheet" href="css/styles.css" /></noscript>
+  </head>
+  <body id="app-body">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="container header-inner">
+        <div class="logo">
+          <span class="logo-icon" aria-hidden="true">🧑‍🤝‍🧑</span>
+          <span class="logo-text">eizyGroup</span>
+        </div>
+        <nav class="main-nav" aria-label="Main navigation">
+          <a href="index.html" class="nav-link" aria-label="Back to home"
+            >Home</a
+          >
+          <a href="about.html" class="nav-link" aria-label="About page"
+            >About</a
+          >
+          <a
+            href="faq.html"
+            class="nav-link active"
+            aria-label="Frequently asked questions"
+            >FAQ</a
+          >
+          <a
+            href="#"
+            class="nav-link"
+            id="nav-login"
+            aria-label="Login or create account"
+            onclick="window.switchToLogin(); return false;"
+            >Login</a
+          >
+        </nav>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <!-- Hero Section -->
+      <section class="section hero-section" style="padding: 3rem 0">
+        <div class="container">
+          <div style="text-align: center; margin-bottom: 3rem">
+            <h1>Frequently Asked Questions</h1>
+            <p
+              style="
+                font-size: 1.2rem;
+                color: var(--text-secondary);
+                max-width: 600px;
+                margin: 1rem auto;
+              "
+            >
+              Get answers to common questions about eizyGroup
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ Content -->
+      <section class="section">
+        <div class="container" style="max-width: 800px; width: 100%; margin-left: auto; margin-right: auto; padding: 0 1rem;">
+          <!-- Getting Started Category -->
+          <div class="faq-category">
+            <h3>🚀 Getting Started</h3>
+
+            <div class="faq-item active" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>How do I use eizyGroup?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  <ol style="padding-left: 1.5rem; line-height: 2">
+                    <li>
+                      Enter student/participant names (one per line or
+                      comma-separated)
+                    </li>
+                    <li>Set the number of groups OR students per group</li>
+                    <li>Click "Generate Groups"</li>
+                    <li>View the results with analytics</li>
+                    <li>Copy, export as CSV, or print your groups</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>Do I need to create an account?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  Yes, creating a free account allows you to save your grouping
+                  history, track analytics, and access advanced features. Your
+                  account is completely free and takes 30 seconds to create.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>Can I use it on mobile?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  Yes! eizyGroup is fully responsive and works great on phones,
+                  tablets, and desktops. All features are available on mobile
+                  devices.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>How many students can I group?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  You can group anywhere from 2 to 10,000+ students. The app
+                  works efficiently with any size class or group.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Features Category -->
+          <div class="faq-category">
+            <h3>⚙️ Features & Functionality</h3>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>How does the algorithm ensure fairness?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  Our algorithm uses cryptographically secure randomization
+                  combined with optimization algorithms to:
+                  <ul style="margin-top: 0.5rem; padding-left: 1.5rem">
+                    <li>Eliminate human bias and favoritism</li>
+                    <li>
+                      Ensure balanced group sizes (no huge groups, no tiny
+                      groups)
+                    </li>
+                    <li>Distribute students randomly across groups</li>
+                    <li>
+                      Prevent duplicate pairings (same students aren't always
+                      together)
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>What analytics does eizyGroup show?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  eizyGroup provides:
+                  <ul style="margin-top: 0.5rem; padding-left: 1.5rem">
+                    <li>
+                      <strong>Balance Score:</strong> Measures how evenly
+                      students are distributed
+                    </li>
+                    <li>
+                      <strong>Diversity Score:</strong> Tracks variety in group
+                      composition
+                    </li>
+                    <li>
+                      <strong>Group Size Distribution:</strong> Visual chart of
+                      group sizes
+                    </li>
+                    <li>
+                      <strong>Performance Trends:</strong> See your generation
+                      history
+                    </li>
+                    <li>
+                      <strong>Duplicate Prevention:</strong> Warns about
+                      repeated pairings
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>Can I export my groups?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  Yes! You can:
+                  <ul style="margin-top: 0.5rem; padding-left: 1.5rem">
+                    <li>Copy to clipboard (formatted text)</li>
+                    <li>Export as CSV (import to Excel/Google Sheets)</li>
+                    <li>Print directly from the browser</li>
+                    <li>Share the results via email or messaging</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>Can I import a CSV file?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  Yes! You can import a CSV file with student names. Just click
+                  the "Import CSV" button and select your file. Makes it easy to
+                  use your roster data.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>Can I save and regenerate the same groups?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  Yes! Your generation history is saved automatically. You can
+                  click on any previous generation to reload it and regenerate
+                  from the same student list. Perfect for next semester or next
+                  year!
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Privacy & Security Category -->
+          <div class="faq-category">
+            <h3>🔒 Privacy & Security</h3>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>Where is my data stored?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  Your data is stored locally on your device using browser
+                  storage (localStorage). We never send your student names to
+                  any server. Everything happens in your browser, on your
+                  computer.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>Do you collect student data?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  No! We don't collect, store, or have access to any student
+                  names or personal information. Your data never leaves your
+                  device. We're fully compliant with GDPR, FERPA, and other
+                  privacy regulations.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>Do you use tracking or analytics?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  We use Google AdSense for monetization (ads), which includes
+                  basic analytics about page visits. However, we don't track
+                  individual users or collect personal information. No cookies
+                  track your behavior.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>Is eizyGroup GDPR compliant?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  Yes! Since we don't store student data on servers, we're fully
+                  compliant with GDPR. European teachers can use eizyGroup
+                  without any compliance concerns. See our Privacy Policy for
+                  details.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>What if I'm concerned about my data?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  You can:
+                  <ul style="margin-top: 0.5rem; padding-left: 1.5rem">
+                    <li>Use a pseudonym instead of real names if you prefer</li>
+                    <li>
+                      Clear your browser data anytime to delete all stored
+                      groups
+                    </li>
+                    <li>Verify our code is open-source on GitHub</li>
+                    <li>Read our detailed Privacy Policy</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Technical Category -->
+          <div class="faq-category">
+            <h3>💻 Technical Questions</h3>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>What browsers are supported?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  eizyGroup works on all modern browsers:
+                  <ul style="margin-top: 0.5rem; padding-left: 1.5rem">
+                    <li>Chrome/Edge (recommended)</li>
+                    <li>Firefox</li>
+                    <li>Safari</li>
+                    <li>Mobile browsers (iOS Safari, Chrome Mobile)</li>
+                  </ul>
+                  Works best on browsers from the last 2 years.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span
+                  >Is eizyGroup accessible for people with disabilities?</span
+                >
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  Yes! eizyGroup is built to WCAG AA standards for
+                  accessibility:
+                  <ul style="margin-top: 0.5rem; padding-left: 1.5rem">
+                    <li>Screen reader compatible</li>
+                    <li>Keyboard navigation support</li>
+                    <li>High contrast mode support</li>
+                    <li>Semantic HTML markup</li>
+                  </ul>
+                  If you find accessibility issues, please let us know!
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>Does eizyGroup work offline?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  Mostly yes! Once the page loads, you can use eizyGroup without
+                  internet. However, you need internet to initially load the
+                  application. Your saved groups persist offline and sync when
+                  you reconnect.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>How fast is the group generation?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  Instant! Groups are generated in milliseconds, even for 1000+
+                  students. Optimized algorithms ensure lightning-fast results
+                  on any device.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Troubleshooting Category -->
+          <div class="faq-category">
+            <h3>🔧 Troubleshooting</h3>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>My groups aren't saving. What's wrong?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  Try:
+                  <ul style="margin-top: 0.5rem; padding-left: 1.5rem">
+                    <li>Check if "Auto-save" is enabled in Settings</li>
+                    <li>Clear browser cache and refresh the page</li>
+                    <li>Check if localStorage is enabled in your browser</li>
+                    <li>Try a different browser</li>
+                    <li>Contact support if the issue persists</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>The CSV import isn't working</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  Make sure your CSV file:
+                  <ul style="margin-top: 0.5rem; padding-left: 1.5rem">
+                    <li>Is a .csv file (not Excel format)</li>
+                    <li>Has one name per line or per cell</li>
+                    <li>Doesn't have special characters that break parsing</li>
+                    <li>Is properly formatted (test in a text editor)</li>
+                  </ul>
+                  Try exporting a sample CSV from eizyGroup to see the expected
+                  format.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>I deleted my history by accident. Can I recover it?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  Unfortunately, deleted history can't be recovered once
+                  cleared. However:
+                  <ul style="margin-top: 0.5rem; padding-left: 1.5rem">
+                    <li>Your browser might have backups (check Cache)</li>
+                    <li>Always export important groupings as CSV first</li>
+                    <li>Consider printing results for archival</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>The dark mode isn't working properly</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  Try:
+                  <ul style="margin-top: 0.5rem; padding-left: 1.5rem">
+                    <li>Toggle dark mode off and on again</li>
+                    <li>Refresh the page (F5)</li>
+                    <li>Check Settings → Dark Mode preference</li>
+                    <li>Clear browser cache</li>
+                    <li>Try a different browser</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- General Category -->
+          <div class="faq-category">
+            <h3>❓ General Questions</h3>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>Is eizyGroup free?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  Yes! eizyGroup is completely free to use. We monetize through
+                  non-intrusive ads. You'll never need to pay to access the core
+                  features.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>Can I use eizyGroup at my school?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  Absolutely! eizyGroup is designed for schools, universities,
+                  and educational institutions. Use it in your classroom, for
+                  staff meetings, or any group assignment need.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>Can I suggest a feature?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  Yes! We love hearing from our users. Please send feature
+                  requests to our support email. We review all suggestions and
+                  implement the most requested features regularly.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>How can I report a bug?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  Please report bugs by:
+                  <ul style="margin-top: 0.5rem; padding-left: 1.5rem">
+                    <li>Emailing us with details and screenshots</li>
+                    <li>Opening an issue on our GitHub repository</li>
+                    <li>Contacting us through the app</li>
+                  </ul>
+                  Include browser version, OS, and step-by-step reproduction
+                  steps for faster fixes.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+              <div class="faq-question">
+                <span>Who's behind eizyGroup?</span>
+                <span class="faq-toggle">▼</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-content">
+                  eizyGroup was created by a passionate full-stack developer who
+                  believes in fair, transparent education tools. See our
+                  <a href="about.html">About Page</a> for more details about our
+                  mission and values.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA Section -->
+      <section class="section cta-section">
+        <div class="container" style="text-align: center">
+          <h2 style="font-size: 1.5rem; margin-bottom: 1rem">
+            Still have questions?
+          </h2>
+          <p style="margin-bottom: 1.5rem; color: var(--text-secondary)">
+            Can't find your answer? Check our full documentation or contact our
+            support team.
+          </p>
+          <button
+            class="btn btn-primary"
+            onclick="handleHeroCTA();"
+            aria-label="Get started with eizyGroup"
+          >
+            Get Started
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer" role="contentinfo">
+      <div class="container footer-inner">
+        <div>© <span id="year"></span> eizyGroup</div>
+        <div>
+          <a
+            href="about.html"
+            style="color: inherit; text-decoration: none; margin: 0 1rem"
+            >About</a
+          >
+          <a
+            href="faq.html"
+            style="color: inherit; text-decoration: none; margin: 0 1rem"
+            >FAQ</a
+          >
+          <a
+            href="privacy.html"
+            style="color: inherit; text-decoration: none; margin: 0 1rem"
+            >Privacy</a
+          >
+          <a
+            href="terms.html"
+            style="color: inherit; text-decoration: none; margin: 0 1rem"
+            >Terms</a
+          >
+        </div>
+      </div>
+    </footer>
+
+    <!-- Login Modal (hidden by default) -->
+    <div class="modal" id="login-modal" aria-hidden="true" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+      <div class="modal-backdrop" id="modal-backdrop" aria-hidden="true"></div>
+      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <button class="modal-close" id="modal-close">×</button>
+        <h3 id="modal-title">Sign In</h3>
+        <form id="login-form">
+          <label class="field">
+            <span>Email</span>
+            <input type="email" id="login-email" required />
+          </label>
+          <label class="field">
+            <span>Password</span>
+            <input type="password" id="login-password" required />
+          </label>
+          <div class="modal-actions">
+            <button class="btn btn-primary" type="submit">Sign In</button>
+            <button class="btn btn-ghost" type="button" id="modal-cancel">Cancel</button>
+          </div>
+        </form>
+        <div class="modal-footer">
+          Don't have an account?
+          <a href="#" id="switch-to-signup">Sign up</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signup Modal (hidden by default) -->
+    <div class="modal" id="signup-modal" aria-hidden="true" role="dialog" aria-labelledby="signup-title" aria-modal="true">
+      <div class="modal-backdrop" id="modal-backdrop-signup" aria-hidden="true"></div>
+      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="signup-title">
+        <button class="modal-close" id="modal-close-signup">×</button>
+        <h3 id="signup-title">Create Account</h3>
+        <form id="signup-form">
+          <label class="field">
+            <span>Full Name</span>
+            <input type="text" id="signup-name" required />
+          </label>
+          <label class="field">
+            <span>Email</span>
+            <input type="email" id="signup-email" required />
+          </label>
+          <label class="field">
+            <span>Password</span>
+            <input type="password" id="signup-password" required />
+          </label>
+          <label class="field">
+            <span>Confirm Password</span>
+            <input type="password" id="signup-confirm" required />
+          </label>
+          <div class="modal-actions">
+            <button class="btn btn-primary" type="submit">Create Account</button>
+            <button class="btn btn-ghost" type="button" id="modal-cancel-signup">Cancel</button>
+          </div>
+        </form>
+        <div class="modal-footer">
+          Already have an account?
+          <a href="#" id="switch-to-login">Sign in</a>
+        </div>
+      </div>
+    </div>
+    </script>
+  </body>
+</html>

@@ -337,6 +337,313 @@ class GeneratorPresenter {
     }
     return arr;
   }
+  /**
+   * Comprehensive Gender Detection Algorithm
+   * Uses multiple heuristics to detect gender patterns in names
+   * Returns: 'F' (Female), 'M' (Male), or 'U' (Undetected/Neutral)
+   *
+   * Works across multiple languages and naming conventions:
+   * - English names
+   * - European names (Spanish, German, French, Italian, etc.)
+   * - African names (Ghanaian, Nigerian, Kenyan, etc.)
+   * - Asian names (common patterns)
+   *
+   * Heuristics used:
+   * 1. Name endings (most common indicator)
+   * 2. Titles/Prefixes (Dr., Mr., Ms., etc.)
+   * 3. Common name patterns (including Ghanaian names)
+   */
+  detectGender(name) {
+    const originalName = name.trim();
+    const lowerName = originalName.toLowerCase();
+
+    // FEMALE INDICATORS
+    const femaleEndings = [
+      // English
+      "a",
+      "ine",
+      "tion",
+      "sion",
+      "ia",
+      "ie",
+      "y",
+      "ee",
+      "elle",
+      "ette",
+      "ess",
+      // Spanish/Italian/Portuguese
+      "ana",
+      "anna",
+      "ella",
+      "etta",
+      "ina",
+      "ita",
+      "ida",
+      "ada",
+      "ara",
+      "era",
+      // French
+      "ette",
+      "ine",
+      "oise",
+      "aise",
+      "uelle",
+      "ence",
+      "ance",
+      // German
+      "e",
+      "in",
+      "ine",
+      "chen",
+      // Slavic
+      "enko",
+      "ina",
+      "yna",
+      "sky",
+    ];
+
+    const femalePrefixes = [
+      "Mrs",
+      "Ms",
+      "Miss",
+      "Mme",
+      "Mademoiselle",
+      "Fräulein",
+      "Señora",
+      "Signora",
+    ];
+
+    const femalePatterns = [
+      // English names
+      "ann",
+      "beth",
+      "diane",
+      "barbara",
+      "catherine",
+      "margaret",
+      "elizabeth",
+      "susan",
+      "karen",
+      "nancy",
+      "sandra",
+      "patricia",
+      "donna",
+      "deborah",
+      // Ghanaian female names
+      "ama",
+      "akosua",
+      "afia",
+      "abena",
+      "adwoa",
+      "esi",
+      "efua",
+      "ewuradwoa",
+      "opaline",
+      "patience",
+      "comfort",
+      "grace",
+      "favour",
+      "chioma",
+      "zainab",
+      "fatima",
+      "mariam",
+      "nadia",
+      // African names (general)
+      "amara",
+      "zara",
+      "kali",
+      "layla",
+    ];
+
+    // MALE INDICATORS
+    const maleEndings = [
+      // English
+      "n",
+      "r",
+      "d",
+      "k",
+      "x",
+      "z",
+      "us",
+      "is",
+      "os",
+      // Spanish/Italian
+      "o",
+      "eo",
+      "igo",
+      // French
+      "au",
+      "eau",
+      "ois",
+      "ique",
+      // German
+      "mann",
+      "er",
+      "ner",
+      "haus",
+      // Slavic
+      "ev",
+      "ovich",
+      "ski",
+      "sky",
+      "ov",
+      "ak",
+    ];
+
+    const malePrefixes = [
+      "Mr",
+      "Dr",
+      "Prof",
+      "Sir",
+      "Herr",
+      "Señor",
+      "Signor",
+      "Monsieur",
+    ];
+
+    const malePatterns = [
+      // English names
+      "john",
+      "james",
+      "robert",
+      "michael",
+      "william",
+      "david",
+      "richard",
+      "joseph",
+      "thomas",
+      "charles",
+      "daniel",
+      "matthew",
+      "anthony",
+      // Ghanaian male names
+      "kwame",
+      "kwesi",
+      "kofi",
+      "kojo",
+      "akos",
+      "amos",
+      "benjamin",
+      "boakye",
+      "kwaku",
+      "kwaw",
+      "nana",
+      "yaw",
+      "moses",
+      "ishmael",
+      "ibrahim",
+      "ahmed",
+      "abdul",
+      "hassan",
+      // African names (general)
+      "amara",
+      "amir",
+      "asante",
+    ];
+
+    // Check for explicit titles/prefixes (highest priority)
+    for (const prefix of femalePrefixes) {
+      if (originalName.startsWith(prefix)) return "F";
+    }
+    for (const prefix of malePrefixes) {
+      if (originalName.startsWith(prefix)) return "M";
+    }
+
+    // Check for explicit common name patterns
+    for (const pattern of femalePatterns) {
+      if (lowerName.includes(pattern)) return "F";
+    }
+    for (const pattern of malePatterns) {
+      if (lowerName.includes(pattern)) return "M";
+    }
+
+    // Check name endings (most reliable for detection)
+    // Female endings have priority in tie situations
+    let femaleProbability = 0;
+    let maleProbability = 0;
+
+    for (const ending of femaleEndings) {
+      if (lowerName.endsWith(ending) && ending.length >= 1) {
+        femaleProbability += ending.length * 2; // Weight by length
+        break;
+      }
+    }
+
+    for (const ending of maleEndings) {
+      if (lowerName.endsWith(ending) && ending.length >= 1) {
+        maleProbability += ending.length * 1.5;
+        break;
+      }
+    }
+
+    // Return based on probability
+    if (femaleProbability > maleProbability) return "F";
+    if (maleProbability > femaleProbability) return "M";
+
+    // If no clear indicator, return 'U' for undetected (neutral)
+    return "U";
+  }
+
+  /**
+   * Distribute names into groups with gender balancing
+   * Ensures both females and males are evenly distributed across groups
+   * Handles undetected genders gracefully
+   */
+  distributeIntoGroupsWithGenderBalance(names, numGroups, perGroup) {
+    const validation = this.validateInput(names, numGroups, perGroup);
+    if (!validation.valid) {
+      throw new Error(validation.error);
+    }
+
+    let k = numGroups || 0;
+    if (k <= 0 && perGroup > 0) {
+      k = Math.ceil(names.length / perGroup);
+    }
+    if (k <= 0) {
+      k = Math.max(1, Math.round(names.length / 3));
+    }
+
+    // Separate names by detected gender
+    const namedWithGender = names.map((name) => ({
+      name,
+      gender: this.detectGender(name),
+    }));
+
+    const females = namedWithGender
+      .filter((n) => n.gender === "F")
+      .map((n) => n.name);
+    const males = namedWithGender
+      .filter((n) => n.gender === "M")
+      .map((n) => n.name);
+    const undetected = namedWithGender
+      .filter((n) => n.gender === "U")
+      .map((n) => n.name);
+
+    // Shuffle within each gender group
+    const shuffledFemales = this.randomizeArray(females);
+    const shuffledMales = this.randomizeArray(males);
+    const shuffledUndetected = this.randomizeArray(undetected);
+
+    // Initialize groups
+    const groups = Array.from({ length: k }, () => []);
+
+    // Distribute females evenly first
+    for (let i = 0; i < shuffledFemales.length; i++) {
+      groups[i % k].push(shuffledFemales[i]);
+    }
+
+    // Distribute males evenly
+    for (let i = 0; i < shuffledMales.length; i++) {
+      groups[i % k].push(shuffledMales[i]);
+    }
+
+    // Distribute undetected/neutral names
+    for (let i = 0; i < shuffledUndetected.length; i++) {
+      groups[i % k].push(shuffledUndetected[i]);
+    }
+
+    return groups;
+  }
 
   /**
    * Distribute names into groups
@@ -392,6 +699,116 @@ class GeneratorPresenter {
         error: error.message,
       };
     }
+  }
+
+  /**
+   * Generate groups with gender balance (ensures both genders are evenly distributed)
+   */
+  generateGroupsWithGenderBalance(names, numGroups, perGroup) {
+    try {
+      const cleanedNames = names
+        .split("\n")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+
+      const groups = this.distributeIntoGroupsWithGenderBalance(
+        cleanedNames,
+        parseInt(numGroups) || 0,
+        parseInt(perGroup) || 0
+      );
+
+      const genderStats = this.calculateGenderBalance(groups);
+
+      return {
+        success: true,
+        groups,
+        genderBalance: genderStats,
+        message: `Successfully generated ${
+          groups.length
+        } balanced groups with ${
+          cleanedNames.length
+        } participants! Overall gender balance: ${genderStats.overallBalanceScore.toFixed(
+          1
+        )}%`,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  /**
+   * Calculate gender balance statistics for groups
+   * Shows distribution of females, males, and undetected genders
+   */
+  calculateGenderBalance(groups) {
+    const groupStats = groups.map((group, idx) => {
+      const females = group.filter(
+        (name) => this.detectGender(name) === "F"
+      ).length;
+      const males = group.filter(
+        (name) => this.detectGender(name) === "M"
+      ).length;
+      const undetected = group.filter(
+        (name) => this.detectGender(name) === "U"
+      ).length;
+
+      return {
+        groupNumber: idx + 1,
+        totalStudents: group.length,
+        females,
+        males,
+        undetected,
+        femaleRatio:
+          females > 0 ? ((females / group.length) * 100).toFixed(1) : 0,
+        maleRatio: males > 0 ? ((males / group.length) * 100).toFixed(1) : 0,
+      };
+    });
+
+    const totalFemales = groupStats.reduce((sum, g) => sum + g.females, 0);
+    const totalMales = groupStats.reduce((sum, g) => sum + g.males, 0);
+    const totalUndetected = groupStats.reduce(
+      (sum, g) => sum + g.undetected,
+      0
+    );
+    const totalStudents = totalFemales + totalMales + totalUndetected;
+
+    // Calculate balance score for females (100 = perfectly balanced)
+    const avgFemalesPerGroup = totalFemales / groups.length;
+    const femaleVariance =
+      groupStats.reduce((sum, g) => {
+        return sum + Math.pow(g.females - avgFemalesPerGroup, 2);
+      }, 0) / groups.length;
+    const femaleBalanceScore = Math.max(
+      0,
+      100 - Math.sqrt(femaleVariance) * 20
+    );
+
+    // Calculate balance score for males (100 = perfectly balanced)
+    const avgMalesPerGroup = totalMales / groups.length;
+    const maleVariance =
+      groupStats.reduce((sum, g) => {
+        return sum + Math.pow(g.males - avgMalesPerGroup, 2);
+      }, 0) / groups.length;
+    const maleBalanceScore = Math.max(0, 100 - Math.sqrt(maleVariance) * 20);
+
+    // Overall balance is average of both
+    const overallBalanceScore = (femaleBalanceScore + maleBalanceScore) / 2;
+
+    return {
+      totalFemales,
+      totalMales,
+      totalUndetected,
+      totalStudents,
+      avgFemalesPerGroup: avgFemalesPerGroup.toFixed(2),
+      avgMalesPerGroup: avgMalesPerGroup.toFixed(2),
+      femaleBalanceScore,
+      maleBalanceScore,
+      overallBalanceScore,
+      groupStats,
+    };
   }
 
   /**
@@ -914,8 +1331,157 @@ class GeneratorView {
   }
 
   /**
-   * Copy groups to clipboard
+   * Show gender balance statistics
    */
+  showGenderBalanceStats(genderBalance) {
+    const resultsSection = document.getElementById("results");
+    if (!resultsSection) return;
+
+    const genderPanel = document.createElement("div");
+    genderPanel.className = "stats-panel";
+    genderPanel.setAttribute("role", "region");
+    genderPanel.setAttribute("aria-label", "Gender balance statistics");
+
+    let groupStatsHTML = "";
+    genderBalance.groupStats.forEach((stat) => {
+      const femalePercent =
+        stat.totalStudents > 0
+          ? ((stat.females / stat.totalStudents) * 100).toFixed(1)
+          : 0;
+      const malePercent =
+        stat.totalStudents > 0
+          ? ((stat.males / stat.totalStudents) * 100).toFixed(1)
+          : 0;
+      const undetectedPercent =
+        stat.totalStudents > 0
+          ? ((stat.undetected / stat.totalStudents) * 100).toFixed(1)
+          : 0;
+
+      groupStatsHTML += `
+        <div class="gender-group-stat" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #ffffff; border-radius: 6px; border: 1px solid #e5e7eb;">
+          <span class="group-name" style="font-weight: 600; min-width: 80px; color: #0f1724;">Group ${
+            stat.groupNumber
+          }</span>
+          <div style="display: flex; gap: 1rem; flex: 1;">
+            <span style="display: flex; align-items: center; gap: 0.25rem; color: #0f1724;">
+              <span style="font-size: 1.1rem;">♀️</span>
+              <span style="color: #d946ef; font-weight: 600;">${
+                stat.females
+              } (${femalePercent}%)</span>
+            </span>
+            <span style="display: flex; align-items: center; gap: 0.25rem; color: #0f1724;">
+              <span style="font-size: 1.1rem;">♂️</span>
+              <span style="color: #3b82f6; font-weight: 600;">${
+                stat.males
+              } (${malePercent}%)</span>
+            </span>
+            ${
+              stat.undetected > 0
+                ? `<span style="display: flex; align-items: center; gap: 0.25rem; color: #0f1724;">
+              <span style="font-size: 1.1rem;">❓</span>
+              <span style="color: #6b7280; font-weight: 600;">${stat.undetected} (${undetectedPercent}%)</span>
+            </span>`
+                : ""
+            }
+          </div>
+          <span style="color: #0f1724; font-weight: 500; background: #f0f4ff; padding: 0.25rem 0.5rem; border-radius: 4px;">${
+            stat.totalStudents
+          } total</span>
+        </div>
+      `;
+    });
+
+    genderPanel.innerHTML = `
+      <div class="stats-header">
+        <h3>⚖️ Gender Balance Report</h3>
+        <div style="font-size: 1rem; color: #0f1724; margin-top: 0.75rem; padding: 0.75rem; background: #eef2ff; border-radius: 6px; font-weight: 600; text-align: center;">
+          Total: <span style="color: #d946ef; font-size: 1.2rem;">♀️ ${
+            genderBalance.totalFemales
+          } Females</span> + <span style="color: #3b82f6; font-size: 1.2rem;">♂️ ${
+      genderBalance.totalMales
+    } Males</span> ${
+      genderBalance.totalUndetected > 0
+        ? `+ <span style="color: #6b7280; font-size: 1.2rem;">❓ ${genderBalance.totalUndetected} Undetected</span>`
+        : ""
+    } = ${genderBalance.totalStudents} Total Participants
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-label">♀️ Total Female</div>
+          <div class="stat-value" style="color: #d946ef; font-size: 1.8rem; font-weight: 700;">${
+            genderBalance.totalFemales
+          }</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">♂️ Total Male</div>
+          <div class="stat-value" style="color: #3b82f6; font-size: 1.8rem; font-weight: 700;">${
+            genderBalance.totalMales
+          }</div>
+        </div>
+        ${
+          genderBalance.totalUndetected > 0
+            ? `
+        <div class="stat-item">
+          <div class="stat-label">❓ Undetected</div>
+          <div class="stat-value" style="color: #6b7280; font-size: 1.8rem; font-weight: 700;">${genderBalance.totalUndetected}</div>
+        </div>
+        `
+            : ""
+        }
+        <div class="stat-item">
+          <div class="stat-label">Average ♀️ per Group</div>
+          <div class="stat-value">${genderBalance.avgFemalesPerGroup}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Average ♂️ per Group</div>
+          <div class="stat-value">${genderBalance.avgMalesPerGroup}</div>
+        </div>
+        <div class="stat-item highlight">
+          <div class="stat-label">♀️ Balance Score</div>
+          <div class="stat-value score-${
+            genderBalance.femaleBalanceScore > 80
+              ? "high"
+              : genderBalance.femaleBalanceScore > 60
+              ? "medium"
+              : "low"
+          }" style="font-size: 1.2rem;">${genderBalance.femaleBalanceScore.toFixed(
+      1
+    )}%</div>
+        </div>
+        <div class="stat-item highlight">
+          <div class="stat-label">♂️ Balance Score</div>
+          <div class="stat-value score-${
+            genderBalance.maleBalanceScore > 80
+              ? "high"
+              : genderBalance.maleBalanceScore > 60
+              ? "medium"
+              : "low"
+          }" style="font-size: 1.2rem;">${genderBalance.maleBalanceScore.toFixed(
+      1
+    )}%</div>
+        </div>
+        <div class="stat-item highlight">
+          <div class="stat-label">Overall Balance</div>
+          <div class="stat-value score-${
+            genderBalance.overallBalanceScore > 80
+              ? "high"
+              : genderBalance.overallBalanceScore > 60
+              ? "medium"
+              : "low"
+          }" style="font-size: 1.3rem; font-weight: 700;">${genderBalance.overallBalanceScore.toFixed(
+      1
+    )}%</div>
+        </div>
+      </div>
+      <div style="margin-top: 1rem; padding: 1rem; background: #f9fafb; border-radius: 8px; font-size: 0.9rem;">
+        <h4 style="margin: 0 0 0.75rem 0; color: #7c3aed; font-weight: 600;">📋 Detailed Group Breakdown:</h4>
+        <div style="display: grid; gap: 0.5rem;">${groupStatsHTML}</div>
+      </div>
+    `;
+
+    resultsSection.insertAdjacentElement("afterbegin", genderPanel);
+  }
   async copyToClipboard(formattedText) {
     try {
       await navigator.clipboard.writeText(formattedText);
@@ -1676,11 +2242,23 @@ class ApplicationController {
     const studentInput = this.generatorView.getStudentInput();
     const config = this.generatorView.getGroupConfig();
 
-    const result = this.generatorPresenter.generateGroups(
-      studentInput,
-      config.numGroups,
-      config.perGroup
+    // Check if gender-balanced grouping is enabled
+    const genderBalanceToggle = document.getElementById(
+      "gender-balance-toggle"
     );
+    const useGenderBalance = genderBalanceToggle && genderBalanceToggle.checked;
+
+    const result = useGenderBalance
+      ? this.generatorPresenter.generateGroupsWithGenderBalance(
+          studentInput,
+          config.numGroups,
+          config.perGroup
+        )
+      : this.generatorPresenter.generateGroups(
+          studentInput,
+          config.numGroups,
+          config.perGroup
+        );
 
     if (!result.success) {
       this.generatorView.showAlert(result.error, "error");
@@ -1688,6 +2266,19 @@ class ApplicationController {
     }
 
     this.generatorView.renderGroups(result.groups);
+
+    // Show gender balance info if available
+    if (result.genderBalance) {
+      const stats = result.genderBalance;
+      const genderMsg = `✓ Gender Distribution - Female: ${
+        stats.totalFemales
+      } | Male: ${stats.totalMales} | Undetected: ${
+        stats.totalUndetected
+      } | Overall Balance: ${stats.overallBalanceScore.toFixed(1)}%`;
+      this.generatorView.showAlert(genderMsg, "info");
+      this.generatorView.showGenderBalanceStats(result.genderBalance);
+    }
+
     this.generatorView.showAlert(result.message, "success");
     this.generatorView.showExportButton(true);
 
