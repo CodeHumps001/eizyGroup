@@ -89,10 +89,18 @@ class AppState {
     this.currentUser = null;
     this.groupHistory = [];
     this.currentGroups = null;
+    this.currentStatistics = null;
     this.theme = "light";
     this.preferences = {
       autoSave: true,
       darkMode: false,
+    };
+    this.performanceMetrics = {
+      totalGroupsGenerated: 0,
+      totalStudentsProcessed: 0,
+      averageBalanceScore: 0,
+      averageDiversityScore: 0,
+      generationHistory: [],
     };
   }
 
@@ -129,6 +137,46 @@ class AppState {
 
   getCurrentGroups() {
     return this.currentGroups;
+  }
+
+  setCurrentStatistics(statistics) {
+    this.currentStatistics = statistics;
+  }
+
+  getCurrentStatistics() {
+    return this.currentStatistics;
+  }
+
+  addPerformanceMetric(statistics) {
+    this.performanceMetrics.totalGroupsGenerated += statistics.totalGroups;
+    this.performanceMetrics.totalStudentsProcessed += statistics.totalStudents;
+
+    // Update average scores
+    const prevCount = this.performanceMetrics.generationHistory.length;
+    const newCount = prevCount + 1;
+
+    this.performanceMetrics.averageBalanceScore =
+      (this.performanceMetrics.averageBalanceScore * prevCount +
+        statistics.balanceScore) /
+      newCount;
+    this.performanceMetrics.averageDiversityScore =
+      (this.performanceMetrics.averageDiversityScore * prevCount +
+        statistics.diversityScore) /
+      newCount;
+
+    this.performanceMetrics.generationHistory.push({
+      timestamp: new Date().toISOString(),
+      ...statistics,
+    });
+
+    // Keep last 100 entries
+    if (this.performanceMetrics.generationHistory.length > 100) {
+      this.performanceMetrics.generationHistory.shift();
+    }
+  }
+
+  getPerformanceMetrics() {
+    return this.performanceMetrics;
   }
 }
 
@@ -373,6 +421,99 @@ class GeneratorPresenter {
       .filter((name) => name.length > 0);
 
     return names;
+  }
+
+  /**
+   * Calculate statistics for groups
+   */
+  calculateStatistics(groups, allNames) {
+    const totalStudents = allNames.length;
+    const totalGroups = groups.length;
+    const avgGroupSize = (totalStudents / totalGroups).toFixed(2);
+    const minGroupSize = Math.min(...groups.map((g) => g.length));
+    const maxGroupSize = Math.max(...groups.map((g) => g.length));
+
+    // Calculate balance score (0-100, higher is more balanced)
+    const variance =
+      groups.reduce((sum, group) => {
+        return sum + Math.pow(group.length - avgGroupSize, 2);
+      }, 0) / totalGroups;
+    const balanceScore = Math.round(100 - Math.min(variance * 20, 100));
+
+    // Calculate diversity (no duplicates = 100)
+    const uniqueStudents = new Set(allNames).size;
+    const diversityScore = Math.round((uniqueStudents / totalStudents) * 100);
+
+    return {
+      totalStudents,
+      totalGroups,
+      avgGroupSize,
+      minGroupSize,
+      maxGroupSize,
+      balanceScore,
+      diversityScore,
+    };
+  }
+
+  /**
+   * Format groups as text for copying
+   */
+  formatGroupsAsText(groups) {
+    let text = "GROUP ASSIGNMENTS\n";
+    text += "=".repeat(50) + "\n\n";
+
+    groups.forEach((group, idx) => {
+      text += `Group ${idx + 1} (${group.length} students):\n`;
+      text += "-".repeat(40) + "\n";
+      group.forEach((student, i) => {
+        text += `${i + 1}. ${student}\n`;
+      });
+      text += "\n";
+    });
+
+    return text;
+  }
+
+  /**
+   * Generate duplicate pairings report
+   */
+  generateDuplicateReport(currentGroups, previousGroupings) {
+    const pairings = new Map();
+    const duplicates = [];
+
+    // Build current pairings
+    currentGroups.forEach((group) => {
+      for (let i = 0; i < group.length; i++) {
+        for (let j = i + 1; j < group.length; j++) {
+          const pair = [group[i], group[j]].sort().join("|");
+          pairings.set(pair, (pairings.get(pair) || 0) + 1);
+        }
+      }
+    });
+
+    // Check against history
+    previousGroupings.forEach((prevGen) => {
+      if (!prevGen.groups) return;
+      prevGen.groups.forEach((group) => {
+        for (let i = 0; i < group.length; i++) {
+          for (let j = i + 1; j < group.length; j++) {
+            const pair = [group[i], group[j]].sort().join("|");
+            if (pairings.has(pair)) {
+              duplicates.push({
+                pair: [group[i], group[j]],
+                previousDate: prevGen.timestamp,
+              });
+            }
+          }
+        }
+      });
+    });
+
+    return {
+      duplicateCount: duplicates.length,
+      duplicates,
+      pairingDetails: Object.fromEntries(pairings),
+    };
   }
 }
 
@@ -711,6 +852,191 @@ class GeneratorView {
       setTimeout(() => alert.remove(), 300);
     }, 4000);
   }
+
+  /**
+   * Display statistics panel
+   */
+  showStatisticsPanel(statistics) {
+    const resultsSection = document.getElementById("results");
+    if (!resultsSection) return;
+
+    const statsPanel = document.createElement("div");
+    statsPanel.className = "stats-panel";
+    statsPanel.setAttribute("role", "region");
+    statsPanel.setAttribute("aria-label", "Group statistics");
+    statsPanel.innerHTML = `
+      <div class="stats-header">
+        <h3>📊 Group Statistics</h3>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-label">Total Students</div>
+          <div class="stat-value">${statistics.totalStudents}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Total Groups</div>
+          <div class="stat-value">${statistics.totalGroups}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Avg Group Size</div>
+          <div class="stat-value">${statistics.avgGroupSize}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Min/Max Size</div>
+          <div class="stat-value">${statistics.minGroupSize}/${
+      statistics.maxGroupSize
+    }</div>
+        </div>
+        <div class="stat-item highlight">
+          <div class="stat-label">Balance Score</div>
+          <div class="stat-value score-${
+            statistics.balanceScore > 80
+              ? "high"
+              : statistics.balanceScore > 60
+              ? "medium"
+              : "low"
+          }">${statistics.balanceScore}%</div>
+        </div>
+        <div class="stat-item highlight">
+          <div class="stat-label">Diversity Score</div>
+          <div class="stat-value score-${
+            statistics.diversityScore > 80
+              ? "high"
+              : statistics.diversityScore > 60
+              ? "medium"
+              : "low"
+          }">${statistics.diversityScore}%</div>
+        </div>
+      </div>
+    `;
+
+    resultsSection.insertAdjacentElement("afterbegin", statsPanel);
+  }
+
+  /**
+   * Copy groups to clipboard
+   */
+  async copyToClipboard(formattedText) {
+    try {
+      await navigator.clipboard.writeText(formattedText);
+      return true;
+    } catch (err) {
+      // Fallback for older browsers
+      const textarea = document.createElement("textarea");
+      textarea.value = formattedText;
+      document.body.appendChild(textarea);
+      textarea.select();
+      const success = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      return success;
+    }
+  }
+
+  /**
+   * Show duplicate prevention report
+   */
+  showDuplicateReport(report) {
+    if (report.duplicateCount === 0) {
+      this.showAlert("✓ No duplicate pairings found! Fresh groups.", "success");
+      return;
+    }
+
+    const message = `⚠️ Found ${report.duplicateCount} duplicate pairing(s) from history`;
+    this.showAlert(message, "error");
+  }
+
+  /**
+   * Render group size distribution chart
+   */
+  renderGroupSizeChart(groups) {
+    const resultsSection = document.getElementById("results");
+    if (!resultsSection) return;
+
+    const chartContainer = document.createElement("div");
+    chartContainer.className = "chart-container";
+    chartContainer.innerHTML = `
+      <div class="chart-header">📊 Group Size Distribution</div>
+      <div class="size-chart">
+        ${groups
+          .map((g, idx) => {
+            const percentage =
+              (g.length / Math.max(...groups.map((gr) => gr.length))) * 100;
+            return `
+            <div class="size-bar" style="height: ${percentage}%;" title="Group ${
+              idx + 1
+            }: ${g.length} students">
+              <span class="bar-label">${g.length}</span>
+            </div>
+          `;
+          })
+          .join("")}
+      </div>
+    `;
+
+    resultsSection.insertAdjacentElement("afterbegin", chartContainer);
+  }
+
+  /**
+   * Render performance trends chart
+   */
+  renderPerformanceTrend(performanceMetrics) {
+    if (
+      !performanceMetrics.generationHistory ||
+      performanceMetrics.generationHistory.length === 0
+    ) {
+      return;
+    }
+
+    const resultsSection = document.getElementById("results");
+    if (!resultsSection) return;
+
+    const chartContainer = document.createElement("div");
+    chartContainer.className = "chart-container performance-chart";
+
+    const history = performanceMetrics.generationHistory.slice(-10); // Last 10
+    const avgBalance = performanceMetrics.averageBalanceScore.toFixed(1);
+    const avgDiversity = performanceMetrics.averageDiversityScore.toFixed(1);
+
+    chartContainer.innerHTML = `
+      <div class="chart-header">📈 Performance Trends (Last 10 Generations)</div>
+      <div class="performance-grid">
+        <div class="performance-item">
+          <div class="perf-metric">
+            <div class="metric-name">Avg Balance Score</div>
+            <div class="metric-bar">
+              <div class="metric-fill" style="width: ${avgBalance}%; background: linear-gradient(90deg, #ff9800, #4caf50);"></div>
+            </div>
+            <div class="metric-value">${avgBalance}%</div>
+          </div>
+        </div>
+        <div class="performance-item">
+          <div class="perf-metric">
+            <div class="metric-name">Avg Diversity Score</div>
+            <div class="metric-bar">
+              <div class="metric-fill" style="width: ${avgDiversity}%; background: linear-gradient(90deg, #ff9800, #4caf50);"></div>
+            </div>
+            <div class="metric-value">${avgDiversity}%</div>
+          </div>
+        </div>
+        <div class="performance-item">
+          <div class="perf-metric">
+            <div class="metric-name">Total Generated</div>
+            <div class="metric-value">${performanceMetrics.totalGroupsGenerated}</div>
+            <div class="metric-subtext">groups</div>
+          </div>
+        </div>
+        <div class="performance-item">
+          <div class="perf-metric">
+            <div class="metric-name">Total Students</div>
+            <div class="metric-value">${performanceMetrics.totalStudentsProcessed}</div>
+            <div class="metric-subtext">processed</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    resultsSection.insertAdjacentElement("afterbegin", chartContainer);
+  }
 }
 
 /**
@@ -904,6 +1230,40 @@ class StorageManager {
     return JSON.parse(localStorage.getItem(this.PREFIX + "preferences")) || {};
   }
 
+  // Statistics/Metrics storage
+  saveStatistics(statistics) {
+    localStorage.setItem(
+      this.PREFIX + "currentStatistics",
+      JSON.stringify(statistics)
+    );
+  }
+
+  getStatistics() {
+    return (
+      JSON.parse(localStorage.getItem(this.PREFIX + "currentStatistics")) ||
+      null
+    );
+  }
+
+  savePerformanceMetrics(metrics) {
+    localStorage.setItem(
+      this.PREFIX + "performanceMetrics",
+      JSON.stringify(metrics)
+    );
+  }
+
+  getPerformanceMetrics() {
+    return (
+      JSON.parse(localStorage.getItem(this.PREFIX + "performanceMetrics")) || {
+        totalGroupsGenerated: 0,
+        totalStudentsProcessed: 0,
+        averageBalanceScore: 0,
+        averageDiversityScore: 0,
+        generationHistory: [],
+      }
+    );
+  }
+
   // Clear all data
   clearAll() {
     Object.keys(localStorage)
@@ -964,6 +1324,18 @@ class ApplicationController {
       ...this.appState.preferences,
       ...preferences,
     };
+
+    // Load persisted statistics
+    const statistics = this.storage.getStatistics();
+    if (statistics) {
+      this.appState.setCurrentStatistics(statistics);
+    }
+
+    // Load persisted performance metrics
+    const performanceMetrics = this.storage.getPerformanceMetrics();
+    if (performanceMetrics) {
+      this.appState.performanceMetrics = performanceMetrics;
+    }
   }
 
   /**
@@ -1177,12 +1549,33 @@ class ApplicationController {
     this.generatorView.showAlert(result.message, "success");
     this.generatorView.showExportButton(true);
 
+    // Calculate and display statistics
+    const names = studentInput
+      .split("\n")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    const statistics = this.generatorPresenter.calculateStatistics(
+      result.groups,
+      names
+    );
+    this.generatorView.showStatisticsPanel(statistics);
+
+    // Save statistics to storage
+    this.appState.setCurrentStatistics(statistics);
+    this.storage.saveStatistics(statistics);
+
+    // Check for duplicate pairings
+    const history = this.appState.getHistory();
+    if (history.length > 0) {
+      const duplicateReport = this.generatorPresenter.generateDuplicateReport(
+        result.groups,
+        history
+      );
+      this.generatorView.showDuplicateReport(duplicateReport);
+    }
+
     // Save to history if auto-save enabled
     if (this.appState.preferences.autoSave) {
-      const names = studentInput
-        .split("\n")
-        .map((s) => s.trim())
-        .filter((s) => s.length > 0);
       const gen = this.historyPresenter.addGeneration(
         names,
         result.groups,
@@ -1193,6 +1586,63 @@ class ApplicationController {
 
     // Store current groups for export
     this.appState.setCurrentGroups(result.groups);
+
+    // Add performance metrics
+    this.appState.addPerformanceMetric({
+      timestamp: new Date().toISOString(),
+      balanceScore: statistics.balanceScore,
+      diversityScore: statistics.diversityScore,
+      totalGroups: result.groups.length,
+      totalStudents: names.length,
+    });
+
+    // Save performance metrics to storage
+    this.storage.savePerformanceMetrics(this.appState.getPerformanceMetrics());
+
+    // Render charts
+    this.generatorView.renderGroupSizeChart(result.groups);
+    this.generatorView.renderPerformanceTrend(
+      this.appState.getPerformanceMetrics()
+    );
+
+    // Add copy to clipboard button
+    this.addCopyButton(result.groups, names);
+  }
+
+  /**
+   * Add copy to clipboard button
+   */
+  addCopyButton(groups, names) {
+    const exportSection = document.getElementById("export-section");
+    if (!exportSection) return;
+
+    // Remove existing copy button if any
+    const existingCopyBtn = exportSection.querySelector(".copy-btn");
+    if (existingCopyBtn) {
+      existingCopyBtn.remove();
+    }
+
+    const copyBtn = document.createElement("button");
+    copyBtn.className = "btn btn-primary copy-btn";
+    copyBtn.innerHTML = "📋 Copy to Clipboard";
+    copyBtn.style.marginRight = "10px";
+
+    copyBtn.addEventListener("click", async () => {
+      const formattedText = this.generatorPresenter.formatGroupsAsText(groups);
+      const success = await this.generatorView.copyToClipboard(formattedText);
+
+      if (success) {
+        this.generatorView.showAlert("✓ Copied to clipboard!", "success");
+        copyBtn.innerHTML = "✓ Copied!";
+        setTimeout(() => {
+          copyBtn.innerHTML = "📋 Copy to Clipboard";
+        }, 2000);
+      } else {
+        this.generatorView.showAlert("Failed to copy", "error");
+      }
+    });
+
+    exportSection.insertBefore(copyBtn, exportSection.firstChild);
   }
 
   /**
