@@ -606,6 +606,9 @@ class GeneratorView {
 
     const wrapper = document.createElement("div");
     wrapper.className = "groups";
+    wrapper.setAttribute("role", "region");
+    wrapper.setAttribute("aria-live", "polite");
+    wrapper.setAttribute("aria-label", "Generated groups");
 
     groups.forEach((g, idx) => {
       const card = document.createElement("div");
@@ -619,6 +622,7 @@ class GeneratorView {
 
       const count = document.createElement("span");
       count.className = "group-card-count";
+      count.setAttribute("aria-label", `${g.length} students`);
       count.textContent = `${g.length} students`;
 
       header.appendChild(title);
@@ -626,8 +630,10 @@ class GeneratorView {
       card.appendChild(header);
 
       const ul = document.createElement("ul");
+      ul.setAttribute("role", "list");
       g.forEach((name) => {
         const li = document.createElement("li");
+        li.setAttribute("role", "listitem");
         li.textContent = name;
         ul.appendChild(li);
       });
@@ -717,6 +723,11 @@ class HistoryView {
     const historyList = document.getElementById("history-list");
     if (!historyList) return;
 
+    // Ensure entries is an array
+    if (!Array.isArray(entries)) {
+      entries = [];
+    }
+
     if (entries.length === 0) {
       historyList.innerHTML =
         '<div class="welcome">No generations yet. Create groups in the Generator tab to see them here.</div>';
@@ -725,16 +736,24 @@ class HistoryView {
 
     const html = entries
       .map((entry) => {
+        // Ensure entry is a GroupGeneration instance with methods
+        const formattedDate = entry.getFormattedDate
+          ? entry.getFormattedDate()
+          : new Date(entry.timestamp).toLocaleDateString();
+        const groupsSummary = entry.getGroupsSummary
+          ? entry.getGroupsSummary()
+          : `${entry.numGroups || 0} groups`;
+
         return `
         <div class="history-item">
           <div class="history-item-header">
-            <div class="history-item-title">${entry.numStudents} students → ${
-          entry.numGroups
-        } groups</div>
-            <div class="history-item-date">${entry.getFormattedDate()}</div>
+            <div class="history-item-title">${
+              entry.numStudents || 0
+            } students → ${entry.numGroups || 0} groups</div>
+            <div class="history-item-date">${formattedDate}</div>
           </div>
           <div class="history-item-details">
-            <div class="history-item-stats">${entry.getGroupsSummary()}</div>
+            <div class="history-item-stats">${groupsSummary}</div>
             <div class="history-item-actions">
               <button class="btn btn-small btn-ghost" onclick="window.eApp.loadFromHistory(${
                 entry.id
@@ -1052,6 +1071,26 @@ class ApplicationController {
       exportCsvBtn.addEventListener("click", () => this.handleExportCSV());
     }
 
+    // Tab buttons (dashboard)
+    const tabBtns = document.querySelectorAll(".tab-btn");
+    tabBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const tab = btn.getAttribute("data-tab");
+        if (tab && tab !== "logout") {
+          this.switchTab(tab);
+        }
+      });
+    });
+
+    // Logout button (dashboard)
+    const navLogoutBtn = document.getElementById("nav-logout-btn");
+    if (navLogoutBtn) {
+      navLogoutBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.logout();
+      });
+    }
+
     // Theme toggle
     const themeToggle = document.getElementById("theme-toggle");
     if (themeToggle) {
@@ -1076,12 +1115,13 @@ class ApplicationController {
     const result = this.authPresenter.login(creds.email, creds.password);
 
     if (result.success) {
-      this.authView.showMessage("login", result.message, "success");
+      // Save to storage immediately before redirect
       this.storage.saveCurrentUser(result.user);
+      this.authView.showMessage("login", result.message, "success");
       setTimeout(() => {
         this.authView.hideLoginForm();
         window.location.href = "dashboard.html";
-      }, 1500);
+      }, 500);
     } else {
       this.authView.showMessage("login", result.message, "error");
     }
@@ -1100,12 +1140,16 @@ class ApplicationController {
     );
 
     if (result.success) {
+      // Save to storage immediately before redirect
+      if (result.user) {
+        this.storage.saveCurrentUser(result.user);
+      }
       this.authView.showMessage("signup", result.message, "success");
-      this.storage.saveCurrentUser(result.user);
+      // Use a slightly longer timeout to ensure data is written
       setTimeout(() => {
         this.authView.hideSignupForm();
         window.location.href = "dashboard.html";
-      }, 1500);
+      }, 500);
     } else {
       this.authView.showMessage("signup", result.message, "error");
     }
@@ -1242,7 +1286,9 @@ class ApplicationController {
     const isDark = body.classList.contains("dark-mode");
     const theme = isDark ? "dark" : "light";
 
+    // Update both theme and preferences to keep them in sync
     this.settingsPresenter.setTheme(theme);
+    this.settingsPresenter.updatePreference("darkMode", isDark);
     this.updateThemeIcon();
   }
 
@@ -1276,12 +1322,11 @@ class ApplicationController {
    */
   loadFromHistory(id) {
     const entry = this.historyPresenter.loadGeneration(id);
-    if (!entry) return;
+    if (!entry || !entry.groups) return;
 
     this.switchTab("generator");
-    this.generatorView.setStudentInput(
-      entry.groups.map((g) => g.join("\n")).join("\n")
-    );
+    const studentInput = entry.groups.map((g) => g.join("\n")).join("\n");
+    this.generatorView.setStudentInput(studentInput);
     this.generatorView.renderGroups(entry.groups);
     this.appState.setCurrentGroups(entry.groups);
     this.generatorView.showExportButton(true);
@@ -1298,20 +1343,32 @@ class ApplicationController {
   }
 
   /**
-   * Switch tab
+   * Switch tab with accessibility enhancements
    */
   switchTab(tabName) {
     const tabContents = document.querySelectorAll(".tab-content");
-    tabContents.forEach((tab) => tab.classList.remove("active"));
+    tabContents.forEach((tab) => {
+      tab.classList.remove("active");
+      tab.setAttribute("aria-hidden", "true");
+    });
 
     const tabBtns = document.querySelectorAll(".tab-btn");
-    tabBtns.forEach((btn) => btn.classList.remove("active"));
+    tabBtns.forEach((btn) => {
+      btn.classList.remove("active");
+      btn.setAttribute("aria-selected", "false");
+    });
 
     const selectedTab = document.getElementById(tabName);
-    if (selectedTab) selectedTab.classList.add("active");
+    if (selectedTab) {
+      selectedTab.classList.add("active");
+      selectedTab.setAttribute("aria-hidden", "false");
+    }
 
     const selectedBtn = document.querySelector(`[data-tab="${tabName}"]`);
-    if (selectedBtn) selectedBtn.classList.add("active");
+    if (selectedBtn) {
+      selectedBtn.classList.add("active");
+      selectedBtn.setAttribute("aria-selected", "true");
+    }
 
     if (tabName === "history") {
       this.renderHistory();
@@ -1340,8 +1397,22 @@ class ApplicationController {
     if (darkModeCheckbox) {
       darkModeCheckbox.removeEventListener("change", this.onDarkModeChange);
       darkModeCheckbox.addEventListener("change", (e) => {
-        this.settingsPresenter.updatePreference("darkMode", e.target.checked);
-        this.toggleTheme();
+        const isDarkMode = e.target.checked;
+        // Update preferences
+        this.settingsPresenter.updatePreference("darkMode", isDarkMode);
+        // Update theme to match
+        const theme = isDarkMode ? "dark" : "light";
+        this.settingsPresenter.setTheme(theme);
+        // Update UI
+        const body = document.getElementById("app-body");
+        if (body) {
+          if (isDarkMode) {
+            body.classList.add("dark-mode");
+          } else {
+            body.classList.remove("dark-mode");
+          }
+        }
+        this.updateThemeIcon();
       });
     }
 
@@ -1404,24 +1475,6 @@ class ApplicationController {
       joinedDisplay.textContent = `Joined: ${joinDate}`;
     }
 
-    const logoutBtn = document.getElementById("nav-logout-btn");
-    if (logoutBtn) {
-      logoutBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        this.logout();
-      });
-    }
-
-    const tabBtns = document.querySelectorAll(".tab-btn");
-    tabBtns.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const tab = btn.getAttribute("data-tab");
-        if (tab !== "logout") {
-          this.switchTab(tab);
-        }
-      });
-    });
-
     this.switchTab("generator");
   }
 }
@@ -1432,20 +1485,47 @@ class ApplicationController {
 
 let eApp; // Global app instance
 
-document.addEventListener("DOMContentLoaded", () => {
-  // Initialize the application
-  eApp = new ApplicationController();
+// Debounce helper for performance optimization
+const debounce = (func, wait) => {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+};
 
-  // Check if on dashboard
-  if (document.getElementById("dashboard-root")) {
-    eApp.initializeDashboard();
-  }
+// Request animation frame helper for smooth animations
+const rafThrottle = (func) => {
+  let rafId = null;
+  return function throttled(...args) {
+    if (rafId !== null) return;
+    rafId = requestAnimationFrame(() => {
+      func(...args);
+      rafId = null;
+    });
+  };
+};
 
-  // Add animation styles if not present
-  if (!document.querySelector("style[data-alert-animations]")) {
-    const style = document.createElement("style");
-    style.setAttribute("data-alert-animations", "true");
-    style.textContent = `
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+    // Initialize the application
+    window.eApp = eApp = new ApplicationController();
+
+    // Check if on dashboard
+    if (document.getElementById("dashboard-root")) {
+      eApp.initializeDashboard();
+    }
+
+    // Add animation styles if not present
+    if (!document.querySelector("style[data-alert-animations]")) {
+      const style = document.createElement("style");
+      style.setAttribute("data-alert-animations", "true");
+      style.textContent = `
       @keyframes slideInRight {
         from {
           transform: translateX(400px);
@@ -1467,17 +1547,26 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     `;
-    document.head.appendChild(style);
-  }
-});
+      document.head.appendChild(style);
+    }
+  },
+  { once: false }
+);
 
 // ============================================================
 // GLOBAL EXPORTS FOR BACKWARD COMPATIBILITY
 // ============================================================
 
+// Cached references for performance
 window.logout = () => eApp?.logout();
 window.isLoggedIn = () => eApp?.appState.isLoggedIn();
-window.currentUser = () => eApp?.appState.getCurrentUser();
+Object.defineProperty(window, "currentUser", {
+  get() {
+    return eApp?.appState.getCurrentUser();
+  },
+  enumerable: true,
+  configurable: true,
+});
 window.switchToSignup = () => eApp?.authView.showSignupForm();
 window.switchToLogin = () => eApp?.authView.showLoginForm();
 window.switchTab = (tab) => eApp?.switchTab(tab);

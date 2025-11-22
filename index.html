@@ -27,12 +27,15 @@
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="preload" as="style" href="css/styles.css" />
     <title>eizyGroup — Bias-Free Group Generator</title>
     <link rel="stylesheet" href="css/styles.css" />
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect fill='%231e6fb3' width='24' height='24' rx='4'/><path fill='%23fff' d='M6.5 12.5l2 2 6-6' stroke='%23fff' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>"
     />
+    <script defer src="js/app.js"></script>
+    <noscript><link rel="stylesheet" href="css/styles.css" /></noscript>
   </head>
   <body id="app-body">
     <!-- Skip to main content link for keyboard navigation -->
@@ -48,12 +51,22 @@
           <span class="logo-text">eizyGroup</span>
         </div>
         <nav class="main-nav" aria-label="Main navigation">
-          <a href="#" class="nav-link" id="nav-home" aria-label="Home">Home</a>
+          <a
+            href="#"
+            class="nav-link"
+            id="nav-home"
+            aria-label="Home page"
+            role="button"
+            tabindex="0"
+            >Home</a
+          >
           <a
             href="#"
             class="nav-link"
             id="nav-login"
-            aria-label="Login or account"
+            aria-label="Login or create account"
+            role="button"
+            tabindex="0"
             >Login</a
           >
           <a
@@ -61,7 +74,9 @@
             class="nav-link"
             id="nav-dashboard"
             style="display: none"
-            aria-label="Dashboard"
+            aria-label="Go to dashboard"
+            role="button"
+            tabindex="0"
             >Dashboard</a
           >
         </nav>
@@ -79,18 +94,18 @@
               Perfect for educators, facilitators, and team leaders.
             </p>
             <div class="hero-buttons">
-              <a
-                href="#"
+              <button
                 id="hero-cta-btn"
                 class="btn btn-primary"
-                onclick="handleHeroCTA(); return false;"
-                aria-label="Get started with eizyGroup"
-                >Get Started</a
+                onclick="handleHeroCTA();"
+                aria-label="Get started with eizyGroup - click to create account or login"
               >
+                Get Started
+              </button>
               <a
                 href="#sec-howtouse"
                 class="btn btn-ghost"
-                aria-label="Learn more about eizyGroup"
+                aria-label="Learn more about eizyGroup - scroll to how to use section"
                 >Learn More</a
               >
             </div>
@@ -160,22 +175,22 @@
           <h2 class="topic">How to Use eizyGroup</h2>
           <div class="cards-grid">
             <div class="how-card">
-              <div class="card-icon">📝</div>
+              <div class="card-icon" aria-hidden="true">📝</div>
               <h3>Paste Names</h3>
               <p>Enter student or participant names, one per line.</p>
             </div>
             <div class="how-card">
-              <div class="card-icon">⚙️</div>
+              <div class="card-icon" aria-hidden="true">⚙️</div>
               <h3>Configure</h3>
               <p>Set the number of groups or students per group.</p>
             </div>
             <div class="how-card">
-              <div class="card-icon">✨</div>
+              <div class="card-icon" aria-hidden="true">✨</div>
               <h3>Generate</h3>
               <p>Click generate and get fair, balanced groups instantly.</p>
             </div>
             <div class="how-card">
-              <div class="card-icon">📋</div>
+              <div class="card-icon" aria-hidden="true">📋</div>
               <h3>Export</h3>
               <p>Copy, export, or print your results for sharing.</p>
             </div>
@@ -189,32 +204,32 @@
           <h2 class="topic">Why Choose eizyGroup?</h2>
           <div class="benefits-grid">
             <div class="benefit-item">
-              <h3>🎯 Bias-Free Grouping</h3>
+              <h3><span aria-hidden="true">🎯</span> Bias-Free Grouping</h3>
               <p>
                 Smart algorithms ensure fair and balanced group assignments
                 without human bias.
               </p>
             </div>
             <div class="benefit-item">
-              <h3>⚡ Lightning Fast</h3>
+              <h3><span aria-hidden="true">⚡</span> Lightning Fast</h3>
               <p>Generate groups in seconds. No complex setup, no waiting.</p>
             </div>
             <div class="benefit-item">
-              <h3>🔒 Secure & Private</h3>
+              <h3><span aria-hidden="true">🔒</span> Secure & Private</h3>
               <p>
                 Your data stays yours. No tracking, no analytics, no selling.
               </p>
             </div>
             <div class="benefit-item">
-              <h3>📱 Fully Responsive</h3>
+              <h3><span aria-hidden="true">📱</span> Fully Responsive</h3>
               <p>Works seamlessly on desktop, tablet, and mobile devices.</p>
             </div>
             <div class="benefit-item">
-              <h3>🎓 For Everyone</h3>
+              <h3><span aria-hidden="true">🎓</span> For Everyone</h3>
               <p>Perfect for classrooms, workshops, team building, and more.</p>
             </div>
             <div class="benefit-item">
-              <h3>💡 Simple & Intuitive</h3>
+              <h3><span aria-hidden="true">💡</span> Simple & Intuitive</h3>
               <p>No training needed. Just paste names and click generate.</p>
             </div>
           </div>
@@ -234,14 +249,17 @@
               <div class="testimonial-image-container">
                 <img
                   src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%231e6fb3'/%3E%3Ctext x='60' y='75' text-anchor='middle' font-size='80' fill='%23fff' font-weight='bold' font-family='sans-serif'%3ES%3C/text%3E%3C/svg%3E"
-                  alt="Sarah M., High School Teacher avatar"
+                  alt="Avatar for Sarah M., High School Teacher"
                   class="testimonial-avatar"
                   width="80"
                   height="80"
                   loading="lazy"
                 />
               </div>
-              <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+              <div class="testimonial-stars" aria-hidden="true">⭐⭐⭐⭐⭐</div>
+              <div class="testimonial-rating">
+                <span class="sr-only">5 out of 5 stars</span>
+              </div>
               <p class="testimonial-text">
                 "eizyGroup saved me hours every semester. The random grouping is
                 truly unbiased!"
@@ -254,14 +272,17 @@
               <div class="testimonial-image-container">
                 <img
                   src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23155a9a'/%3E%3Ctext x='60' y='75' text-anchor='middle' font-size='80' fill='%23fff' font-weight='bold' font-family='sans-serif'%3EJ%3C/text%3E%3C/svg%3E"
-                  alt="Dr. James K., University Professor avatar"
+                  alt="Avatar for Dr. James K., University Professor"
                   class="testimonial-avatar"
                   width="80"
                   height="80"
                   loading="lazy"
                 />
               </div>
-              <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+              <div class="testimonial-stars" aria-hidden="true">⭐⭐⭐⭐⭐</div>
+              <div class="testimonial-rating">
+                <span class="sr-only">5 out of 5 stars</span>
+              </div>
               <p class="testimonial-text">
                 "My students love the instant results. It makes group
                 assignments fun instead of tedious."
@@ -274,14 +295,17 @@
               <div class="testimonial-image-container">
                 <img
                   src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%231e6fb3'/%3E%3Ctext x='60' y='75' text-anchor='middle' font-size='80' fill='%23fff' font-weight='bold' font-family='sans-serif'%3EM%3C/text%3E%3C/svg%3E"
-                  alt="Maria L., Workshop Facilitator avatar"
+                  alt="Avatar for Maria L., Workshop Facilitator"
                   class="testimonial-avatar"
                   width="80"
                   height="80"
                   loading="lazy"
                 />
               </div>
-              <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+              <div class="testimonial-stars" aria-hidden="true">⭐⭐⭐⭐⭐</div>
+              <div class="testimonial-rating">
+                <span class="sr-only">5 out of 5 stars</span>
+              </div>
               <p class="testimonial-text">
                 "Simple, clean, and effective. This is exactly what I've been
                 looking for."
@@ -300,7 +324,7 @@
           <h2>Your Data, Your Control</h2>
           <div class="security-grid">
             <div class="security-item">
-              <div class="security-icon">🔐</div>
+              <div class="security-icon" aria-hidden="true">🔐</div>
               <h3>100% Private</h3>
               <p>
                 All data stays on your device. We never store or access your
@@ -308,7 +332,7 @@
               </p>
             </div>
             <div class="security-item">
-              <div class="security-icon">🚫</div>
+              <div class="security-icon" aria-hidden="true">🚫</div>
               <h3>No Tracking</h3>
               <p>
                 Zero analytics, no cookies, no third-party trackers. Complete
@@ -316,7 +340,7 @@
               </p>
             </div>
             <div class="security-item">
-              <div class="security-icon">⚡</div>
+              <div class="security-icon" aria-hidden="true">⚡</div>
               <h3>Instant Results</h3>
               <p>
                 Processing happens instantly in your browser. No servers, no
@@ -324,7 +348,7 @@
               </p>
             </div>
             <div class="security-item">
-              <div class="security-icon">💾</div>
+              <div class="security-icon" aria-hidden="true">💾</div>
               <h3>Export Anytime</h3>
               <p>
                 Download your group assignments as CSV for use in any tool or
@@ -341,7 +365,7 @@
           <h2>Perfect For Any Scenario</h2>
           <div class="usecases-grid">
             <div class="usecase-card">
-              <div class="usecase-icon">🎓</div>
+              <div class="usecase-icon" aria-hidden="true">🎓</div>
               <h3>Classroom Groups</h3>
               <p>
                 Create balanced project teams, study groups, or discussion teams
@@ -349,7 +373,7 @@
               </p>
             </div>
             <div class="usecase-card">
-              <div class="usecase-icon">👥</div>
+              <div class="usecase-icon" aria-hidden="true">👥</div>
               <h3>Team Building</h3>
               <p>
                 Organize workshop activities and team-building exercises without
@@ -357,7 +381,7 @@
               </p>
             </div>
             <div class="usecase-card">
-              <div class="usecase-icon">🎯</div>
+              <div class="usecase-icon" aria-hidden="true">🎯</div>
               <h3>Event Organization</h3>
               <p>
                 Split participants into balanced groups for breakout sessions or
@@ -365,7 +389,7 @@
               </p>
             </div>
             <div class="usecase-card">
-              <div class="usecase-icon">📊</div>
+              <div class="usecase-icon" aria-hidden="true">📊</div>
               <h3>Research & Testing</h3>
               <p>
                 Create fair control and experimental groups for academic
@@ -381,14 +405,14 @@
         <div class="container">
           <h2>Ready to Make Group Assignments Fair?</h2>
           <p>Try eizyGroup now for free. Create an account to get started.</p>
-          <a
-            href="#"
+          <button
             id="cta-button"
             class="btn btn-primary btn-large"
-            onclick="handleCTAButton(); return false;"
-            aria-label="Get started with eizyGroup now"
-            >Get Started Now</a
+            onclick="handleCTAButton();"
+            aria-label="Create account or login to get started with eizyGroup"
           >
+            Get Started Now
+          </button>
         </div>
       </section>
     </main>
@@ -418,10 +442,7 @@
       >
         <button class="modal-close" id="modal-close">×</button>
         <h3 id="modal-title">Sign In</h3>
-        <form
-          id="login-form"
-          onsubmit="event.preventDefault(); onLoginSubmit();"
-        >
+        <form id="login-form">
           <label class="field">
             <span>Email</span>
             <input type="email" id="login-email" required />
@@ -439,12 +460,7 @@
         </form>
         <div class="modal-footer">
           Don't have an account?
-          <a
-            href="#"
-            id="switch-to-signup"
-            onclick="switchToSignup(); return false;"
-            >Sign up</a
-          >
+          <a href="#" id="switch-to-signup">Sign up</a>
         </div>
       </div>
     </div>
@@ -471,10 +487,7 @@
       >
         <button class="modal-close" id="modal-close-signup">×</button>
         <h3 id="signup-title">Create Account</h3>
-        <form
-          id="signup-form"
-          onsubmit="event.preventDefault(); onSignupSubmit();"
-        >
+        <form id="signup-form">
           <label class="field">
             <span>Full Name</span>
             <input type="text" id="signup-name" required />
@@ -506,20 +519,9 @@
         </form>
         <div class="modal-footer">
           Already have an account?
-          <a
-            href="#"
-            id="switch-to-login"
-            onclick="switchToLogin(); return false;"
-            >Sign in</a
-          >
+          <a href="#" id="switch-to-login">Sign in</a>
         </div>
       </div>
     </div>
-    <script
-      async
-      src="https://api.trustedaccounts.org/js-sdk.js"
-      onload="new TrustedTraffic({ publishableKey: 'pk_live_xHmy6mdjpAJ4Af1ZB9D3IIahgHlRrlkCLVJNjnFmO3LLXjf2qouMz74nRa9TUI5l' }).init()"
-    ></script>
-    <script src="js/app.js"></script>
   </body>
 </html>

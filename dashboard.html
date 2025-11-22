@@ -13,7 +13,9 @@
     />
     <meta name="theme-color" content="#1e6fb3" />
     <title>Dashboard — eizyGroup</title>
+    <link rel="preload" as="style" href="css/styles.css" />
     <link rel="stylesheet" href="css/styles.css" />
+    <noscript><link rel="stylesheet" href="css/styles.css" /></noscript>
   </head>
   <body id="app-body">
     <header class="site-header dashboard-header">
@@ -29,22 +31,23 @@
               <div id="user-joined-display" class="user-joined"></div>
             </div>
           </div>
-          <button class="btn-icon" id="theme-toggle" title="Toggle dark mode">
-            <span id="theme-icon">🌙</span>
+          <button
+            class="btn-icon"
+            id="theme-toggle"
+            title="Toggle dark mode"
+            aria-label="Toggle dark mode"
+            aria-pressed="false"
+          >
+            <span id="theme-icon" aria-hidden="true">🌛</span>
           </button>
-          <a
-            href="#"
+          <button
             id="nav-logout-btn"
             class="btn btn-small"
-            style="
-              padding: 8px 10px;
-              border: 1px solid #35449e;
-              color: red;
-              font-weight: bolder;
-            "
-            onclick="logout(); return false;"
-            >Logout</a
+            onclick="logout();"
+            aria-label="Log out of your account"
           >
+            Logout
+          </button>
         </div>
       </div>
     </header>
@@ -52,16 +55,39 @@
     <div class="dashboard-root" id="dashboard-root">
       <aside class="sidebar">
         <div class="sidebar-inner">
-          <nav class="sidebar-nav">
-            <button class="tab-btn active" data-tab="generator">
+          <nav class="sidebar-nav" role="tablist">
+            <button
+              class="tab-btn active"
+              data-tab="generator"
+              role="tab"
+              aria-selected="true"
+              aria-controls="generator"
+            >
               Generator
             </button>
-            <button class="tab-btn" data-tab="history">History</button>
-            <button class="tab-btn" data-tab="settings">Settings</button>
+            <button
+              class="tab-btn"
+              data-tab="history"
+              role="tab"
+              aria-selected="false"
+              aria-controls="history"
+            >
+              History
+            </button>
+            <button
+              class="tab-btn"
+              data-tab="settings"
+              role="tab"
+              aria-selected="false"
+              aria-controls="settings"
+            >
+              Settings
+            </button>
             <button
               class="tab-btn logout-btn"
               data-tab="logout"
-              onclick="logout(); return false;"
+              onclick="logout();"
+              aria-label="Log out of your account"
             >
               Logout
             </button>
@@ -75,20 +101,14 @@
           <h2>Group Generator</h2>
           <div class="grid">
             <div class="card input-card">
-              <label>Student Names (one per line)</label>
+              <label for="students-input">Student Names (one per line)</label>
               <textarea
                 id="students-input"
                 placeholder="Alice\nBob\nCharlie\n..."
                 rows="10"
+                aria-label="Enter student names, one per line"
               ></textarea>
-              <div
-                style="
-                  margin-top: 12px;
-                  background-color: #fff;
-                  width: 150px;
-                  border-radius: 100px;
-                "
-              >
+              <div style="margin-top: 12px; width: 150px; border-radius: 100px">
                 <label for="csv-import" class="btn btn-small btn-ghost"
                   >📥 Import CSV</label
                 >
@@ -96,24 +116,36 @@
                   type="file"
                   id="csv-import"
                   accept=".csv"
+                  aria-label="Import student names from CSV file"
                   style="display: none"
                 />
               </div>
             </div>
 
             <div class="card config-card">
-              <label>Number of groups</label>
-              <input type="number" id="num-groups" min="1" value="3" />
+              <label for="num-groups">Number of groups</label>
+              <input
+                type="number"
+                id="num-groups"
+                min="1"
+                value="3"
+                aria-label="Set number of groups"
+              />
               <label>— or —</label>
-              <label>Students per group</label>
+              <label for="students-per-group">Students per group</label>
               <input
                 type="number"
                 id="students-per-group"
                 min="1"
                 placeholder="Auto"
+                aria-label="Set students per group (leave blank for auto)"
               />
               <div class="actions">
-                <button class="btn btn-primary" id="generate-btn">
+                <button
+                  class="btn btn-primary"
+                  id="generate-btn"
+                  aria-label="Click to generate balanced groups"
+                >
                   Generate Groups
                 </button>
               </div>
@@ -131,8 +163,15 @@
             id="export-section"
             class="export-section"
             style="display: none; margin-top: 20px"
+            role="region"
+            aria-live="polite"
+            aria-label="Export options"
           >
-            <button class="btn btn-primary" id="export-csv-btn">
+            <button
+              class="btn btn-primary"
+              id="export-csv-btn"
+              aria-label="Export groups as CSV file"
+            >
               📥 Export as CSV
             </button>
           </div>
@@ -173,13 +212,22 @@
               <h3>Preferences</h3>
               <div class="settings-item">
                 <label class="settings-label">
-                  <input type="checkbox" id="dark-mode-pref" />
+                  <input
+                    type="checkbox"
+                    id="dark-mode-pref"
+                    aria-label="Enable dark mode preference"
+                  />
                   Enable Dark Mode
                 </label>
               </div>
               <div class="settings-item">
                 <label class="settings-label">
-                  <input type="checkbox" id="auto-save-pref" checked />
+                  <input
+                    type="checkbox"
+                    id="auto-save-pref"
+                    checked
+                    aria-label="Auto-save group generations to history"
+                  />
                   Auto-save group generations to history
                 </label>
               </div>
@@ -188,7 +236,11 @@
             <div class="card settings-card danger-zone">
               <h3>Data Management</h3>
               <div class="settings-item">
-                <button class="btn btn-ghost" id="clear-history-btn">
+                <button
+                  class="btn btn-ghost"
+                  id="clear-history-btn"
+                  aria-label="Clear all saved group generations"
+                >
                   Clear History
                 </button>
                 <p
@@ -208,20 +260,30 @@
     </div>
 
     <!-- Login Modal (shared) -->
-    <div class="modal" id="login-modal" aria-hidden="true">
-      <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div
+      class="modal"
+      id="login-modal"
+      aria-hidden="true"
+      role="dialog"
+      aria-labelledby="modal-title"
+      aria-modal="true"
+    >
+      <div class="modal-backdrop" id="modal-backdrop" aria-hidden="true"></div>
       <div
         class="modal-panel"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
       >
-        <button class="modal-close" id="modal-close">×</button>
-        <h3 id="modal-title">Sign In</h3>
-        <form
-          id="login-form"
-          onsubmit="event.preventDefault(); onLoginSubmit();"
+        <button
+          class="modal-close"
+          id="modal-close"
+          aria-label="Close sign in dialog"
         >
+          ×
+        </button>
+        <h3 id="modal-title">Sign In</h3>
+        <form id="login-form">
           <label class="field">
             <span>Email</span>
             <input type="email" id="login-email" required />
@@ -239,31 +301,40 @@
         </form>
         <div class="modal-footer">
           Don't have an account?
-          <a
-            href="#"
-            id="switch-to-signup"
-            onclick="switchToSignup(); return false;"
-            >Sign up</a
-          >
+          <a href="#" id="switch-to-signup">Sign up</a>
         </div>
       </div>
     </div>
 
     <!-- Signup Modal (hidden by default) -->
-    <div class="modal" id="signup-modal" aria-hidden="true">
-      <div class="modal-backdrop" id="modal-backdrop-signup"></div>
+    <div
+      class="modal"
+      id="signup-modal"
+      aria-hidden="true"
+      role="dialog"
+      aria-labelledby="signup-title"
+      aria-modal="true"
+    >
+      <div
+        class="modal-backdrop"
+        id="modal-backdrop-signup"
+        aria-hidden="true"
+      ></div>
       <div
         class="modal-panel"
         role="dialog"
         aria-modal="true"
         aria-labelledby="signup-title"
       >
-        <button class="modal-close" id="modal-close-signup">×</button>
-        <h3 id="signup-title">Create Account</h3>
-        <form
-          id="signup-form"
-          onsubmit="event.preventDefault(); onSignupSubmit();"
+        <button
+          class="modal-close"
+          id="modal-close-signup"
+          aria-label="Close create account dialog"
         >
+          ×
+        </button>
+        <h3 id="signup-title">Create Account</h3>
+        <form id="signup-form">
           <label class="field">
             <span>Full Name</span>
             <input type="text" id="signup-name" required />
@@ -295,76 +366,11 @@
         </form>
         <div class="modal-footer">
           Already have an account?
-          <a
-            href="#"
-            id="switch-to-login"
-            onclick="switchToLogin(); return false;"
-            >Sign in</a
-          >
+          <a href="#" id="switch-to-login">Sign in</a>
         </div>
       </div>
     </div>
 
-    <script src="js/app.js"></script>
-    <script>
-      // Dashboard-specific auth check and initialization
-      document.addEventListener("DOMContentLoaded", () => {
-        if (!isLoggedIn()) {
-          // Redirect to home if not logged in
-          window.location.href = "index.html";
-        } else {
-          // Show user info
-          const user = currentUser;
-          const nameDisplay = document.getElementById("user-name-display");
-          const joinedDisplay = document.getElementById("user-joined-display");
-
-          if (nameDisplay && user) {
-            nameDisplay.textContent = user.name || "User";
-          }
-
-          if (joinedDisplay) {
-            const joinDate = user.joinDate
-              ? new Date(user.joinDate).toLocaleDateString()
-              : new Date().toLocaleDateString();
-            joinedDisplay.textContent = `Joined: ${joinDate}`;
-          }
-
-          // Setup logout button
-          const logoutBtn = document.getElementById("nav-logout-btn");
-          if (logoutBtn) {
-            logoutBtn.addEventListener("click", (e) => {
-              e.preventDefault();
-              logout();
-            });
-          }
-
-          // Initialize theme toggle
-          initThemeToggle();
-
-          // Initialize CSV import
-          initCSVImport();
-
-          // Setup tab buttons
-          const tabBtns = document.querySelectorAll(".tab-btn");
-          tabBtns.forEach((btn) => {
-            btn.addEventListener("click", () => {
-              const tab = btn.getAttribute("data-tab");
-              if (tab !== "logout") {
-                switchTab(tab);
-              }
-            });
-          });
-
-          // Setup export CSV button
-          const exportCsvBtn = document.getElementById("export-csv-btn");
-          if (exportCsvBtn) {
-            exportCsvBtn.addEventListener("click", exportGroupsAsCSV);
-          }
-
-          // Initialize the first tab
-          switchTab("generator");
-        }
-      });
-    </script>
+    <script defer src="js/app.js"></script>
   </body>
 </html>
