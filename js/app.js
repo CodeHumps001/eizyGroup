@@ -1,787 +1,775 @@
-// ============ Authentication System for eizyGroup ============
+// ============================================================
+// eizyGroup - OOP/MVP Architecture Refactored Version
+// ============================================================
+// This version implements Object-Oriented Programming with
+// Model-View-Presenter (MVP) architecture for better
+// maintainability, testability, and scalability.
+// ============================================================
 
-// Simple in-memory user database (in production, this would be a backend server)
-let users = JSON.parse(localStorage.getItem("eizyGroup_users")) || {};
-let currentUser =
-  JSON.parse(localStorage.getItem("eizyGroup_currentUser")) || null;
+// ============================================================
+// MODELS - Data Layer (Business Objects)
+// ============================================================
 
-// Save users to localStorage
-function saveUsers() {
-  localStorage.setItem("eizyGroup_users", JSON.stringify(users));
-}
+/**
+ * User Model - Represents a user in the system
+ */
+class User {
+  constructor(email, name, password, joinDate = new Date().toISOString()) {
+    this.email = email;
+    this.name = name;
+    this.password = password; // TODO: Hash in production
+    this.joinDate = joinDate;
+  }
 
-// Save current user to localStorage
-function saveCurrentUser() {
-  if (currentUser) {
-    localStorage.setItem("eizyGroup_currentUser", JSON.stringify(currentUser));
-  } else {
-    localStorage.removeItem("eizyGroup_currentUser");
+  toJSON() {
+    return {
+      email: this.email,
+      name: this.name,
+      password: this.password,
+      joinDate: this.joinDate,
+    };
+  }
+
+  static fromJSON(data) {
+    return new User(data.email, data.name, data.password, data.joinDate);
+  }
+
+  isValid() {
+    return this.email && this.name && this.password;
   }
 }
 
-// Check if user is logged in
-function isLoggedIn() {
-  return currentUser !== null && currentUser !== undefined;
-}
-
-// Signup function
-function signup(name, email, password, confirmPassword) {
-  // Validation
-  if (!name || !email || !password || !confirmPassword) {
-    showAuthMessage("signup", "All fields are required.", "error");
-    return false;
-  }
-  if (password.length < 6) {
-    showAuthMessage(
-      "signup",
-      "Password must be at least 6 characters.",
-      "error"
-    );
-    return false;
-  }
-  if (password !== confirmPassword) {
-    showAuthMessage("signup", "Passwords do not match.", "error");
-    return false;
-  }
-  if (users[email]) {
-    showAuthMessage(
-      "signup",
-      "An account with this email already exists.",
-      "error"
-    );
-    return false;
+/**
+ * GroupGeneration Model - Represents a group generation event
+ */
+class GroupGeneration {
+  constructor(names, groups, numGroups, perGroup) {
+    this.id = Date.now();
+    this.timestamp = new Date().toISOString();
+    this.numStudents = names.length;
+    this.numGroups = groups.length;
+    this.groupConfig = { numGroups, perGroup };
+    this.groups = groups.map((g) => [...g]); // Deep copy
   }
 
-  // Create user
-  users[email] = {
-    email,
-    name,
-    password, // In production, this should be hashed!
-    joinDate: new Date().toISOString(),
-  };
-  saveUsers();
-  currentUser = { email, name, joinDate: users[email].joinDate };
-  saveCurrentUser();
-
-  showAuthMessage(
-    "signup",
-    "Account created successfully! Redirecting...",
-    "success"
-  );
-  setTimeout(() => {
-    hideSignupModal();
-    redirectToDashboard();
-  }, 1500);
-  return true;
-}
-
-// Login function
-function login(email, password) {
-  // Validation
-  if (!email || !password) {
-    showAuthMessage("login", "Email and password are required.", "error");
-    return false;
+  toJSON() {
+    return {
+      id: this.id,
+      timestamp: this.timestamp,
+      numStudents: this.numStudents,
+      numGroups: this.numGroups,
+      groupConfig: this.groupConfig,
+      groups: this.groups,
+    };
   }
 
-  const user = users[email];
-  if (!user) {
-    showAuthMessage(
-      "login",
-      "User not found. Please check your email.",
-      "error"
-    );
-    return false;
-  }
-  if (user.password !== password) {
-    showAuthMessage("login", "Incorrect password.", "error");
-    return false;
+  static fromJSON(data) {
+    const gen = new GroupGeneration([], [], 0, 0);
+    Object.assign(gen, data);
+    return gen;
   }
 
-  // Login successful
-  currentUser = { email: user.email, name: user.name, joinDate: user.joinDate };
-  saveCurrentUser();
-
-  showAuthMessage("login", "Login successful! Redirecting...", "success");
-  setTimeout(() => {
-    hideLoginModal();
-    redirectToDashboard();
-  }, 1500);
-  return true;
-}
-
-// Logout function
-function logout() {
-  currentUser = null;
-  saveCurrentUser();
-  window.location.href = "index.html";
-}
-
-// Show auth message
-function showAuthMessage(modal, message, type) {
-  const modalId = modal === "login" ? "login-modal" : "signup-modal";
-  const modalEl = document.getElementById(modalId);
-  if (!modalEl) return;
-
-  let msgEl = modalEl.querySelector(".auth-message");
-  if (!msgEl) {
-    msgEl = document.createElement("div");
-    msgEl.className = "auth-message";
-    const form = modalEl.querySelector("form");
-    form.insertBefore(msgEl, form.firstChild);
+  getFormattedDate() {
+    const date = new Date(this.timestamp);
+    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
   }
 
-  msgEl.className = `auth-message ${type}`;
-  msgEl.textContent = message;
-}
-
-// Redirect to dashboard
-function redirectToDashboard() {
-  window.location.href = "dashboard.html";
-}
-
-// ============ UI Modal Functions ============
-
-// Show/Hide Modals
-function showLoginModal() {
-  const modal = document.getElementById("login-modal");
-  if (modal) {
-    modal.setAttribute("aria-hidden", "false");
-    clearAuthMessages();
+  getGroupsSummary() {
+    return this.groups
+      .map((g, idx) => `Group ${idx + 1}: ${g.length} students`)
+      .join(", ");
   }
 }
 
-function hideLoginModal() {
-  const modal = document.getElementById("login-modal");
-  if (modal) {
-    modal.setAttribute("aria-hidden", "true");
-    document.getElementById("login-form").reset();
+/**
+ * AppState Model - Central state management
+ */
+class AppState {
+  constructor() {
+    this.currentUser = null;
+    this.groupHistory = [];
+    this.currentGroups = null;
+    this.theme = "light";
+    this.preferences = {
+      autoSave: true,
+      darkMode: false,
+    };
   }
-}
 
-function showSignupModal() {
-  const modal = document.getElementById("signup-modal");
-  if (modal) {
-    modal.setAttribute("aria-hidden", "false");
-    clearAuthMessages();
+  isLoggedIn() {
+    return this.currentUser !== null;
   }
-}
 
-function hideSignupModal() {
-  const modal = document.getElementById("signup-modal");
-  if (modal) {
-    modal.setAttribute("aria-hidden", "true");
-    document.getElementById("signup-form").reset();
+  setCurrentUser(user) {
+    this.currentUser = user;
   }
-}
 
-function switchToSignup() {
-  hideLoginModal();
-  showSignupModal();
-}
+  getCurrentUser() {
+    return this.currentUser;
+  }
 
-function switchToLogin() {
-  hideSignupModal();
-  showLoginModal();
-}
-
-function clearAuthMessages() {
-  const msgs = document.querySelectorAll(".auth-message");
-  msgs.forEach((m) => m.remove());
-}
-
-// Form submission handlers
-function onLoginSubmit() {
-  const email = document.getElementById("login-email").value.trim();
-  const password = document.getElementById("login-password").value;
-  login(email, password);
-}
-
-function onSignupSubmit() {
-  const name = document.getElementById("signup-name").value.trim();
-  const email = document.getElementById("signup-email").value.trim();
-  const password = document.getElementById("signup-password").value;
-  const confirm = document.getElementById("signup-confirm").value;
-  signup(name, email, password, confirm);
-}
-
-// ============ Landing Page Login State Management ============
-
-function updateNavigationForLoginState() {
-  const isLogged = isLoggedIn();
-
-  // Update login button in nav
-  const loginBtn = document.getElementById("nav-login");
-  const dashboardLink = document.getElementById("nav-dashboard");
-
-  if (isLogged) {
-    if (loginBtn) {
-      loginBtn.textContent = "Account";
-      loginBtn.onclick = (e) => {
-        e.preventDefault();
-        window.location.href = "dashboard.html";
-      };
-    }
-    if (dashboardLink) {
-      dashboardLink.style.display = "block";
-    }
-  } else {
-    if (loginBtn) {
-      loginBtn.textContent = "Login";
-      loginBtn.onclick = (e) => {
-        e.preventDefault();
-        showLoginModal();
-      };
-    }
-    if (dashboardLink) {
-      dashboardLink.style.display = "none";
+  addToHistory(generation) {
+    this.groupHistory.unshift(generation);
+    if (this.groupHistory.length > 50) {
+      this.groupHistory.pop();
     }
   }
 
-  // Update hero button
-  const heroCTABtn = document.getElementById("hero-cta-btn");
-  if (heroCTABtn) {
-    if (isLogged) {
-      heroCTABtn.textContent = "Visit Dashboard";
-      heroCTABtn.onclick = (e) => {
-        e.preventDefault();
-        window.location.href = "dashboard.html";
+  getHistory() {
+    return this.groupHistory;
+  }
+
+  clearHistory() {
+    this.groupHistory = [];
+  }
+
+  setCurrentGroups(groups) {
+    this.currentGroups = groups;
+  }
+
+  getCurrentGroups() {
+    return this.currentGroups;
+  }
+}
+
+// ============================================================
+// PRESENTERS - Business Logic Layer
+// ============================================================
+
+/**
+ * AuthPresenter - Handles authentication logic
+ */
+class AuthPresenter {
+  constructor(storageManager, appState) {
+    this.storage = storageManager;
+    this.appState = appState;
+  }
+
+  validateEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  validatePassword(password) {
+    return password && password.length >= 6;
+  }
+
+  validatePasswordMatch(password, confirmPassword) {
+    return password === confirmPassword;
+  }
+
+  signup(name, email, password, confirmPassword) {
+    // Validation
+    if (!name || !email || !password || !confirmPassword) {
+      return {
+        success: false,
+        message: "All fields are required.",
       };
-    } else {
-      heroCTABtn.textContent = "Get Started";
-      heroCTABtn.onclick = (e) => {
-        e.preventDefault();
-        showSignupModal();
+    }
+
+    if (!this.validateEmail(email)) {
+      return {
+        success: false,
+        message: "Please enter a valid email.",
+      };
+    }
+
+    if (!this.validatePassword(password)) {
+      return {
+        success: false,
+        message: "Password must be at least 6 characters.",
+      };
+    }
+
+    if (!this.validatePasswordMatch(password, confirmPassword)) {
+      return {
+        success: false,
+        message: "Passwords do not match.",
+      };
+    }
+
+    if (this.storage.userExists(email)) {
+      return {
+        success: false,
+        message: "An account with this email already exists.",
+      };
+    }
+
+    // Create user
+    const user = new User(email, name, password);
+    this.storage.saveUser(user);
+    this.appState.setCurrentUser({
+      email: user.email,
+      name: user.name,
+      joinDate: user.joinDate,
+    });
+
+    return {
+      success: true,
+      message: "Account created successfully!",
+      user: this.appState.getCurrentUser(),
+    };
+  }
+
+  login(email, password) {
+    // Validation
+    if (!email || !password) {
+      return {
+        success: false,
+        message: "Email and password are required.",
+      };
+    }
+
+    const user = this.storage.getUser(email);
+    if (!user) {
+      return {
+        success: false,
+        message: "User not found. Please check your email.",
+      };
+    }
+
+    if (user.password !== password) {
+      return {
+        success: false,
+        message: "Incorrect password.",
+      };
+    }
+
+    this.appState.setCurrentUser({
+      email: user.email,
+      name: user.name,
+      joinDate: user.joinDate,
+    });
+
+    return {
+      success: true,
+      message: "Login successful!",
+      user: this.appState.getCurrentUser(),
+    };
+  }
+
+  logout() {
+    this.appState.setCurrentUser(null);
+    return { success: true, message: "Logged out successfully." };
+  }
+}
+
+/**
+ * GeneratorPresenter - Handles group generation logic
+ */
+class GeneratorPresenter {
+  constructor() {}
+
+  /**
+   * Validate input parameters
+   */
+  validateInput(names, numGroups, perGroup) {
+    if (!names || names.length === 0) {
+      return { valid: false, error: "Please enter at least one student name." };
+    }
+
+    if (numGroups <= 0 && perGroup <= 0) {
+      return {
+        valid: false,
+        error: "Please specify either number of groups or students per group.",
+      };
+    }
+
+    return { valid: true };
+  }
+
+  /**
+   * Fisher-Yates shuffle algorithm
+   */
+  randomizeArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  /**
+   * Distribute names into groups
+   */
+  distributeIntoGroups(names, numGroups, perGroup) {
+    const validation = this.validateInput(names, numGroups, perGroup);
+    if (!validation.valid) {
+      throw new Error(validation.error);
+    }
+
+    const shuffled = this.randomizeArray(names);
+    let k = numGroups || 0;
+
+    if (k <= 0 && perGroup > 0) {
+      k = Math.ceil(shuffled.length / perGroup);
+    }
+    if (k <= 0) {
+      k = Math.max(1, Math.round(shuffled.length / 3));
+    }
+
+    const groups = Array.from({ length: k }, () => []);
+    for (let i = 0; i < shuffled.length; i++) {
+      groups[i % k].push(shuffled[i]);
+    }
+
+    return groups;
+  }
+
+  /**
+   * Generate groups from input
+   */
+  generateGroups(names, numGroups, perGroup) {
+    try {
+      const cleanedNames = names
+        .split("\n")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+
+      const groups = this.distributeIntoGroups(
+        cleanedNames,
+        parseInt(numGroups) || 0,
+        parseInt(perGroup) || 0
+      );
+
+      return {
+        success: true,
+        groups,
+        message: `Successfully generated ${groups.length} groups with ${cleanedNames.length} students!`,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
       };
     }
   }
 
-  // Update CTA button
-  const ctaBtn = document.getElementById("cta-button");
-  if (ctaBtn) {
-    if (isLogged) {
-      ctaBtn.textContent = "Visit Dashboard";
-      ctaBtn.onclick = (e) => {
-        e.preventDefault();
-        window.location.href = "dashboard.html";
-      };
-    } else {
-      ctaBtn.textContent = "Get Started Now";
-      ctaBtn.onclick = (e) => {
-        e.preventDefault();
-        showSignupModal();
-      };
-    }
+  /**
+   * Export groups to CSV format
+   */
+  exportAsCSV(groups) {
+    let csv = "Group,Student\n";
+    groups.forEach((group, groupIdx) => {
+      group.forEach((student) => {
+        csv += `${groupIdx + 1},"${student}"\n`;
+      });
+    });
+    return csv;
   }
-}
 
-function handleHeroCTA() {
-  if (isLoggedIn()) {
-    window.location.href = "dashboard.html";
-  } else {
-    showSignupModal();
-  }
-}
-
-function handleCTAButton() {
-  if (isLoggedIn()) {
-    window.location.href = "dashboard.html";
-  } else {
-    showSignupModal();
-  }
-}
-
-// ============ Core UI Initialization ============
-
-document.addEventListener("DOMContentLoaded", () => {
-  // Set copyright year
-  const y = new Date().getFullYear();
-  const yearEl = document.getElementById("year");
-  if (yearEl) yearEl.textContent = y;
-
-  // Update navigation based on login state (for landing page)
-  updateNavigationForLoginState();
-
-  // Hook up login/signup links
-  const loginLinks = document.querySelectorAll(
-    "#nav-login, #nav-login-dashboard"
-  );
-  loginLinks.forEach(
-    (a) =>
-      a &&
-      a.addEventListener("click", (e) => {
-        e.preventDefault();
-        if (!isLoggedIn()) {
-          showLoginModal();
-        }
+  /**
+   * Parse CSV file
+   */
+  parseCSV(csv) {
+    const lines = csv.split("\n").map((line) => line.trim());
+    const names = lines
+      .filter((line) => line.length > 0)
+      .map((line) => {
+        const parts = line.split(",");
+        return parts[0].trim();
       })
-  );
+      .filter((name) => name.length > 0);
 
-  // Login modal controls
-  const modalClose = document.getElementById("modal-close");
-  const modalCancel = document.getElementById("modal-cancel");
-  const modalBackdrop = document.getElementById("modal-backdrop");
-  if (modalClose) modalClose.addEventListener("click", hideLoginModal);
-  if (modalCancel) modalCancel.addEventListener("click", hideLoginModal);
-  if (modalBackdrop) modalBackdrop.addEventListener("click", hideLoginModal);
+    return names;
+  }
+}
 
-  // Signup modal controls
-  const modalCloseSignup = document.getElementById("modal-close-signup");
-  const modalCancelSignup = document.getElementById("modal-cancel-signup");
-  const modalBackdropSignup = document.getElementById("modal-backdrop-signup");
-  if (modalCloseSignup)
-    modalCloseSignup.addEventListener("click", hideSignupModal);
-  if (modalCancelSignup)
-    modalCancelSignup.addEventListener("click", hideSignupModal);
-  if (modalBackdropSignup)
-    modalBackdropSignup.addEventListener("click", hideSignupModal);
+/**
+ * HistoryPresenter - Handles history management logic
+ */
+class HistoryPresenter {
+  constructor(appState, storageManager) {
+    this.appState = appState;
+    this.storage = storageManager;
+  }
 
-  // Generate button (dashboard)
-  const genBtn = document.getElementById("generate-btn");
-  if (genBtn) genBtn.addEventListener("click", onGenerateClicked);
+  addGeneration(names, groups, numGroups, perGroup) {
+    const generation = new GroupGeneration(names, groups, numGroups, perGroup);
+    this.appState.addToHistory(generation);
+    this.storage.saveHistory(this.appState.getHistory());
+    return generation;
+  }
 
-  // Dashboard link - require login
-  const dashboardLink = document.getElementById("nav-dashboard");
-  if (dashboardLink) {
-    dashboardLink.addEventListener("click", (e) => {
-      if (!isLoggedIn()) {
-        e.preventDefault();
-        showLoginModal();
+  getHistory() {
+    return this.appState.getHistory();
+  }
+
+  deleteGeneration(id) {
+    const history = this.appState.getHistory();
+    const filtered = history.filter((h) => h.id !== id);
+    this.appState.groupHistory = filtered;
+    this.storage.saveHistory(filtered);
+    return true;
+  }
+
+  loadGeneration(id) {
+    const entry = this.appState.getHistory().find((h) => h.id === id);
+    return entry;
+  }
+
+  clearHistory() {
+    this.appState.clearHistory();
+    this.storage.saveHistory([]);
+    return true;
+  }
+}
+
+/**
+ * SettingsPresenter - Handles settings logic
+ */
+class SettingsPresenter {
+  constructor(appState, storageManager) {
+    this.appState = appState;
+    this.storage = storageManager;
+  }
+
+  getTheme() {
+    return this.appState.theme;
+  }
+
+  setTheme(theme) {
+    this.appState.theme = theme;
+    this.storage.saveTheme(theme);
+  }
+
+  getPreferences() {
+    return this.appState.preferences;
+  }
+
+  updatePreference(key, value) {
+    this.appState.preferences[key] = value;
+    this.storage.savePreferences(this.appState.preferences);
+  }
+
+  getCurrentUser() {
+    return this.appState.getCurrentUser();
+  }
+}
+
+// ============================================================
+// VIEWS - UI Layer
+// ============================================================
+
+/**
+ * AuthView - Handles authentication UI
+ */
+class AuthView {
+  constructor() {}
+
+  showMessage(modal, message, type) {
+    const modalId = modal === "login" ? "login-modal" : "signup-modal";
+    const modalEl = document.getElementById(modalId);
+    if (!modalEl) return;
+
+    let msgEl = modalEl.querySelector(".auth-message");
+    if (!msgEl) {
+      msgEl = document.createElement("div");
+      msgEl.className = "auth-message";
+      const form = modalEl.querySelector("form");
+      form.insertBefore(msgEl, form.firstChild);
+    }
+
+    msgEl.className = `auth-message ${type}`;
+    msgEl.textContent = message;
+  }
+
+  clearMessages() {
+    const msgs = document.querySelectorAll(".auth-message");
+    msgs.forEach((m) => m.remove());
+  }
+
+  showLoginForm() {
+    const modal = document.getElementById("login-modal");
+    if (modal) {
+      modal.setAttribute("aria-hidden", "false");
+      this.clearMessages();
+    }
+  }
+
+  hideLoginForm() {
+    const modal = document.getElementById("login-modal");
+    if (modal) {
+      modal.setAttribute("aria-hidden", "true");
+      const form = document.getElementById("login-form");
+      if (form) form.reset();
+    }
+  }
+
+  showSignupForm() {
+    const modal = document.getElementById("signup-modal");
+    if (modal) {
+      modal.setAttribute("aria-hidden", "false");
+      this.clearMessages();
+    }
+  }
+
+  hideSignupForm() {
+    const modal = document.getElementById("signup-modal");
+    if (modal) {
+      modal.setAttribute("aria-hidden", "true");
+      const form = document.getElementById("signup-form");
+      if (form) form.reset();
+    }
+  }
+
+  getLoginCredentials() {
+    return {
+      email: document.getElementById("login-email")?.value.trim() || "",
+      password: document.getElementById("login-password")?.value || "",
+    };
+  }
+
+  getSignupData() {
+    return {
+      name: document.getElementById("signup-name")?.value.trim() || "",
+      email: document.getElementById("signup-email")?.value.trim() || "",
+      password: document.getElementById("signup-password")?.value || "",
+      confirmPassword: document.getElementById("signup-confirm")?.value || "",
+    };
+  }
+
+  updateNavigation(isLoggedIn) {
+    const loginBtn = document.getElementById("nav-login");
+    const dashboardLink = document.getElementById("nav-dashboard");
+
+    if (isLoggedIn) {
+      if (loginBtn) {
+        loginBtn.textContent = "Account";
+        loginBtn.onclick = () => (window.location.href = "dashboard.html");
       }
-    });
-  }
-
-  // Update diagnostic status
-  try {
-    checkSystemStatus();
-  } catch (e) {
-    console.log("checkSystemStatus error", e);
-  }
-});
-
-/* Placeholder: handleLogin - logs for debugging */
-function handleLogin(email) {
-  console.log("handleLogin called for", email);
-}
-
-/* Placeholder: generateGroups - logs for debugging */
-function generateGroups(inputs) {
-  console.log("generateGroups placeholder called with", inputs);
-}
-
-/* Placeholder: checkSystemStatus - logs for debugging */
-function checkSystemStatus() {
-  console.log("checkSystemStatus called");
-  const diag = document.getElementById("diag-status");
-  if (diag) diag.textContent = "OK";
-}
-
-// ============ Group History Management ============
-
-let groupHistory = JSON.parse(localStorage.getItem("eizyGroup_history")) || [];
-
-function saveGroupHistory() {
-  localStorage.setItem("eizyGroup_history", JSON.stringify(groupHistory));
-}
-
-function addToHistory(names, groups, numGroups, perGroup) {
-  const entry = {
-    id: Date.now(),
-    timestamp: new Date().toISOString(),
-    numStudents: names.length,
-    numGroups: groups.length,
-    groupConfig: { numGroups, perGroup },
-    groups: groups.map((g) => [...g]),
-  };
-  groupHistory.unshift(entry); // Add to front
-  if (groupHistory.length > 50) groupHistory.pop(); // Keep last 50
-  saveGroupHistory();
-}
-
-function clearGroupHistory() {
-  if (confirm("Are you sure? This will delete all saved group generations.")) {
-    groupHistory = [];
-    saveGroupHistory();
-    renderHistory();
-  }
-}
-
-// ============ Dashboard Functions ============
-
-// Called when Generate Groups button is clicked
-function onGenerateClicked() {
-  const raw = document.getElementById("students-input")?.value || "";
-  const numGroupsInput =
-    parseInt(document.getElementById("num-groups")?.value || "0", 10) || 0;
-  const perGroupInput =
-    parseInt(document.getElementById("students-per-group")?.value || "0", 10) ||
-    0;
-
-  generateGroups({ raw, numGroupsInput, perGroupInput });
-
-  const names = raw
-    .split("\n")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  if (names.length === 0) {
-    showResultsMessage("Please paste some student names to generate groups.");
-    return;
-  }
-
-  const groups = computeGroups(names, numGroupsInput, perGroupInput);
-  renderGroups(groups);
-
-  // Show success message
-  showAlert(
-    `✓ Successfully generated ${groups.length} groups with ${names.length} students!`,
-    "success"
-  );
-
-  // Save to history
-  const autoSave = localStorage.getItem("eizyGroup_auto_save") !== "false";
-  if (autoSave) {
-    addToHistory(names, groups, numGroupsInput, perGroupInput);
-  }
-
-  // Show export button
-  const exportSection = document.getElementById("export-section");
-  if (exportSection) {
-    exportSection.style.display = "block";
-  }
-
-  // Store current groups for export
-  window.currentGroups = { names, groups };
-}
-
-function showResultsMessage(msg) {
-  const results = document.getElementById("results");
-  if (results) {
-    results.innerHTML = `<div class="welcome">${msg}</div>`;
-  }
-}
-
-function computeGroups(names, numGroups, perGroup) {
-  const arr = names.slice();
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-
-  let k = numGroups || 0;
-  if (k <= 0 && perGroup > 0) k = Math.ceil(arr.length / perGroup);
-  if (k <= 0) k = Math.max(1, Math.round(arr.length / 3));
-
-  const out = Array.from({ length: k }, () => []);
-  for (let i = 0; i < arr.length; i++) {
-    out[i % k].push(arr[i]);
-  }
-  return out;
-}
-
-function renderGroups(groups) {
-  const results = document.getElementById("results");
-  if (!results) return;
-  const wrapper = document.createElement("div");
-  wrapper.className = "groups";
-
-  groups.forEach((g, idx) => {
-    const card = document.createElement("div");
-    card.className = "group-card";
-
-    // Header with group number and count
-    const header = document.createElement("div");
-    header.className = "group-card-header";
-
-    const title = document.createElement("h4");
-    title.textContent = `Group ${idx + 1}`;
-
-    const count = document.createElement("span");
-    count.className = "group-card-count";
-    count.textContent = `${g.length} students`;
-
-    header.appendChild(title);
-    header.appendChild(count);
-    card.appendChild(header);
-
-    // Student list
-    const ul = document.createElement("ul");
-    g.forEach((name) => {
-      const li = document.createElement("li");
-      li.textContent = name;
-      ul.appendChild(li);
-    });
-    card.appendChild(ul);
-    wrapper.appendChild(card);
-  });
-
-  results.innerHTML = "";
-  results.appendChild(wrapper);
-}
-
-// ============ Dark Mode Toggle ============
-
-function initThemeToggle() {
-  const savedTheme = localStorage.getItem("eizyGroup_theme") || "light";
-  if (savedTheme === "dark") {
-    document.getElementById("app-body").classList.add("dark-mode");
-    updateThemeIcon();
-  }
-
-  const themeToggle = document.getElementById("theme-toggle");
-  if (themeToggle) {
-    themeToggle.addEventListener("click", toggleTheme);
-  }
-}
-
-function toggleTheme() {
-  const body = document.getElementById("app-body");
-  if (!body) return;
-
-  body.classList.toggle("dark-mode");
-  const isDark = body.classList.contains("dark-mode");
-  localStorage.setItem("eizyGroup_theme", isDark ? "dark" : "light");
-  updateThemeIcon();
-}
-
-function updateThemeIcon() {
-  const body = document.getElementById("app-body");
-  const icon = document.getElementById("theme-icon");
-  if (icon) {
-    icon.textContent = body.classList.contains("dark-mode") ? "☀️" : "🌙";
-  }
-}
-
-// ============ Alert System ============
-
-function showAlert(message, type = "success") {
-  // Create alert element
-  const alert = document.createElement("div");
-  alert.className = `alert alert-${type}`;
-  alert.textContent = message;
-
-  const isDarkMode = document
-    .getElementById("app-body")
-    ?.classList.contains("dark-mode");
-
-  alert.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
-    padding: 14px 20px;
-    border-radius: 8px;
-    font-weight: 500;
-    font-size: 0.95rem;
-    animation: slideInRight 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    max-width: 300px;
-  `;
-
-  if (type === "success") {
-    if (isDarkMode) {
-      alert.style.backgroundColor = "#064e3b";
-      alert.style.color = "#d1fae5";
-      alert.style.border = "1px solid #047857";
+      if (dashboardLink) dashboardLink.style.display = "block";
     } else {
-      alert.style.backgroundColor = "#d1fae5";
-      alert.style.color = "#065f46";
-      alert.style.border = "1px solid #6ee7b7";
-    }
-  } else if (type === "error") {
-    if (isDarkMode) {
-      alert.style.backgroundColor = "#7f1d1d";
-      alert.style.color = "#fee2e2";
-      alert.style.border = "1px solid #dc2626";
-    } else {
-      alert.style.backgroundColor = "#fee2e2";
-      alert.style.color = "#991b1b";
-      alert.style.border = "1px solid #fca5a5";
+      if (loginBtn) {
+        loginBtn.textContent = "Login";
+        loginBtn.onclick = () => this.showLoginForm();
+      }
+      if (dashboardLink) dashboardLink.style.display = "none";
     }
   }
 
-  document.body.appendChild(alert);
+  updateCTAButtons(isLoggedIn) {
+    const heroCTABtn = document.getElementById("hero-cta-btn");
+    const ctaBtn = document.getElementById("cta-button");
 
-  // Remove after 4 seconds
-  setTimeout(() => {
-    alert.style.animation = "slideOutRight 0.3s ease";
+    if (isLoggedIn) {
+      if (heroCTABtn) {
+        heroCTABtn.textContent = "Visit Dashboard";
+        heroCTABtn.onclick = () => (window.location.href = "dashboard.html");
+      }
+      if (ctaBtn) {
+        ctaBtn.textContent = "Visit Dashboard";
+        ctaBtn.onclick = () => (window.location.href = "dashboard.html");
+      }
+    } else {
+      if (heroCTABtn) {
+        heroCTABtn.textContent = "Get Started";
+        heroCTABtn.onclick = () => this.showSignupForm();
+      }
+      if (ctaBtn) {
+        ctaBtn.textContent = "Get Started Now";
+        ctaBtn.onclick = () => this.showSignupForm();
+      }
+    }
+  }
+}
+
+/**
+ * GeneratorView - Handles group generator UI
+ */
+class GeneratorView {
+  constructor() {}
+
+  getStudentInput() {
+    return document.getElementById("students-input")?.value || "";
+  }
+
+  setStudentInput(value) {
+    const textarea = document.getElementById("students-input");
+    if (textarea) textarea.value = value;
+  }
+
+  getGroupConfig() {
+    return {
+      numGroups:
+        parseInt(document.getElementById("num-groups")?.value || "0") || 0,
+      perGroup:
+        parseInt(document.getElementById("students-per-group")?.value || "0") ||
+        0,
+    };
+  }
+
+  renderGroups(groups) {
+    const results = document.getElementById("results");
+    if (!results) return;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "groups";
+
+    groups.forEach((g, idx) => {
+      const card = document.createElement("div");
+      card.className = "group-card";
+
+      const header = document.createElement("div");
+      header.className = "group-card-header";
+
+      const title = document.createElement("h4");
+      title.textContent = `Group ${idx + 1}`;
+
+      const count = document.createElement("span");
+      count.className = "group-card-count";
+      count.textContent = `${g.length} students`;
+
+      header.appendChild(title);
+      header.appendChild(count);
+      card.appendChild(header);
+
+      const ul = document.createElement("ul");
+      g.forEach((name) => {
+        const li = document.createElement("li");
+        li.textContent = name;
+        ul.appendChild(li);
+      });
+      card.appendChild(ul);
+      wrapper.appendChild(card);
+    });
+
+    results.innerHTML = "";
+    results.appendChild(wrapper);
+  }
+
+  displayMessage(message, type = "info") {
+    const results = document.getElementById("results");
+    if (results) {
+      results.innerHTML = `<div class="welcome">${message}</div>`;
+    }
+  }
+
+  showExportButton(show = true) {
+    const exportSection = document.getElementById("export-section");
+    if (exportSection) {
+      exportSection.style.display = show ? "block" : "none";
+    }
+  }
+
+  showAlert(message, type = "success") {
+    const alert = document.createElement("div");
+    alert.className = `alert alert-${type}`;
+    alert.textContent = message;
+
+    const isDarkMode = document
+      .getElementById("app-body")
+      ?.classList.contains("dark-mode");
+
+    alert.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      padding: 14px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      animation: slideInRight 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      max-width: 300px;
+    `;
+
+    if (type === "success") {
+      if (isDarkMode) {
+        alert.style.backgroundColor = "#064e3b";
+        alert.style.color = "#d1fae5";
+        alert.style.border = "1px solid #047857";
+      } else {
+        alert.style.backgroundColor = "#d1fae5";
+        alert.style.color = "#065f46";
+        alert.style.border = "1px solid #6ee7b7";
+      }
+    } else if (type === "error") {
+      if (isDarkMode) {
+        alert.style.backgroundColor = "#7f1d1d";
+        alert.style.color = "#fee2e2";
+        alert.style.border = "1px solid #dc2626";
+      } else {
+        alert.style.backgroundColor = "#fee2e2";
+        alert.style.color = "#991b1b";
+        alert.style.border = "1px solid #fca5a5";
+      }
+    }
+
+    document.body.appendChild(alert);
+
     setTimeout(() => {
-      alert.remove();
-    }, 300);
-  }, 4000);
+      alert.style.animation = "slideOutRight 0.3s ease";
+      setTimeout(() => alert.remove(), 300);
+    }, 4000);
+  }
 }
 
-// Add animations to head
-if (!document.querySelector("style[data-alert-animations]")) {
-  const style = document.createElement("style");
-  style.setAttribute("data-alert-animations", "true");
-  style.textContent = `
-    @keyframes slideInRight {
-      from {
-        transform: translateX(400px);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
+/**
+ * HistoryView - Handles history UI
+ */
+class HistoryView {
+  constructor() {}
+
+  renderHistory(entries) {
+    const historyList = document.getElementById("history-list");
+    if (!historyList) return;
+
+    if (entries.length === 0) {
+      historyList.innerHTML =
+        '<div class="welcome">No generations yet. Create groups in the Generator tab to see them here.</div>';
+      return;
     }
-    @keyframes slideOutRight {
-      from {
-        transform: translateX(0);
-        opacity: 1;
-      }
-      to {
-        transform: translateX(400px);
-        opacity: 0;
-      }
-    }
-  `;
-  document.head.appendChild(style);
-}
 
-// ============ Tab Switching ============
-
-function switchTab(tabName) {
-  // Hide all tabs
-  const tabContents = document.querySelectorAll(".tab-content");
-  tabContents.forEach((tab) => tab.classList.remove("active"));
-
-  // Deactivate all tab buttons
-  const tabBtns = document.querySelectorAll(".tab-btn");
-  tabBtns.forEach((btn) => btn.classList.remove("active"));
-
-  // Show selected tab
-  const selectedTab = document.getElementById(tabName);
-  if (selectedTab) {
-    selectedTab.classList.add("active");
-  }
-
-  // Activate selected tab button
-  const selectedBtn = document.querySelector(`[data-tab="${tabName}"]`);
-  if (selectedBtn) {
-    selectedBtn.classList.add("active");
-  }
-
-  // Load content if needed
-  if (tabName === "history") {
-    renderHistory();
-  } else if (tabName === "settings") {
-    initSettings();
-  }
-}
-
-// ============ History Management ============
-
-function renderHistory() {
-  const historyList = document.getElementById("history-list");
-  if (!historyList) return;
-
-  if (groupHistory.length === 0) {
-    historyList.innerHTML =
-      '<div class="welcome">No generations yet. Create groups in the Generator tab to see them here.</div>';
-    return;
-  }
-
-  const html = groupHistory
-    .map((entry) => {
-      const date = new Date(entry.timestamp);
-      const dateStr =
-        date.toLocaleDateString() + " " + date.toLocaleTimeString();
-      const groupsStr = entry.groups
-        .map((g, idx) => `Group ${idx + 1}: ${g.length} students`)
-        .join(", ");
-
-      return `
+    const html = entries
+      .map((entry) => {
+        return `
         <div class="history-item">
           <div class="history-item-header">
-            <div class="history-item-title">${entry.numStudents} students → ${entry.numGroups} groups</div>
-            <div class="history-item-date">${dateStr}</div>
+            <div class="history-item-title">${entry.numStudents} students → ${
+          entry.numGroups
+        } groups</div>
+            <div class="history-item-date">${entry.getFormattedDate()}</div>
           </div>
           <div class="history-item-details">
-            <div class="history-item-stats">${groupsStr}</div>
+            <div class="history-item-stats">${entry.getGroupsSummary()}</div>
             <div class="history-item-actions">
-              <button class="btn btn-small btn-ghost" onclick="loadFromHistory(${entry.id})">Load</button>
-              <button class="btn btn-small btn-ghost" onclick="deleteFromHistory(${entry.id})">Delete</button>
+              <button class="btn btn-small btn-ghost" onclick="window.eApp.loadFromHistory(${
+                entry.id
+              })">Load</button>
+              <button class="btn btn-small btn-ghost" onclick="window.eApp.deleteFromHistory(${
+                entry.id
+              })">Delete</button>
             </div>
           </div>
         </div>
       `;
-    })
-    .join("");
+      })
+      .join("");
 
-  historyList.innerHTML = html;
-}
-
-function loadFromHistory(historyId) {
-  const entry = groupHistory.find((h) => h.id === historyId);
-  if (!entry) return;
-
-  // Switch to generator tab
-  switchTab("generator");
-
-  // Clear current input
-  const studentsInput = document.getElementById("students-input");
-  if (studentsInput) {
-    studentsInput.value = entry.groups.map((g) => g.join("\n")).join("\n");
+    historyList.innerHTML = html;
   }
 
-  // Render the groups
-  renderGroups(entry.groups);
-  window.currentGroups = { names: entry.groups.flat(), groups: entry.groups };
-
-  // Show export button
-  const exportSection = document.getElementById("export-section");
-  if (exportSection) {
-    exportSection.style.display = "block";
+  displayEmptyState() {
+    const historyList = document.getElementById("history-list");
+    if (historyList) {
+      historyList.innerHTML =
+        '<div class="welcome">No generations yet. Create groups in the Generator tab to see them here.</div>';
+    }
   }
 }
 
-function deleteFromHistory(historyId) {
-  if (confirm("Delete this generation from history?")) {
-    groupHistory = groupHistory.filter((h) => h.id !== historyId);
-    saveGroupHistory();
-    renderHistory();
-  }
-}
+/**
+ * SettingsView - Handles settings UI
+ */
+class SettingsView {
+  constructor() {}
 
-// ============ CSV Export ============
+  renderUserInfo(user) {
+    if (!user) return;
 
-function exportGroupsAsCSV() {
-  if (!window.currentGroups || !window.currentGroups.groups) {
-    showAlert("No groups to export. Generate groups first.", "error");
-    return;
-  }
-
-  const groups = window.currentGroups.groups;
-  let csv = "Group,Student\n";
-
-  groups.forEach((group, groupIdx) => {
-    group.forEach((student, studentIdx) => {
-      csv += `${groupIdx + 1},"${student}"\n`;
-    });
-  });
-
-  // Create blob and download
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  const url = URL.createObjectURL(blob);
-
-  link.setAttribute("href", url);
-  link.setAttribute("download", `groups_${new Date().getTime()}.csv`);
-  link.style.visibility = "hidden";
-
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-
-  showAlert("✓ Groups exported successfully as CSV!", "success");
-}
-
-// ============ Settings Management ============
-
-function initSettings() {
-  // Display user info
-  const user = currentUser;
-  if (user) {
     const nameEl = document.getElementById("settings-name");
     const emailEl = document.getElementById("settings-email");
     const joinedEl = document.getElementById("settings-joined");
@@ -789,112 +777,721 @@ function initSettings() {
     if (nameEl) nameEl.textContent = user.name;
     if (emailEl) emailEl.textContent = user.email;
     if (joinedEl) {
-      const joinDate = user.joinDate
-        ? new Date(user.joinDate).toLocaleDateString()
-        : "Unknown";
+      const joinDate = new Date(user.joinDate).toLocaleDateString();
       joinedEl.textContent = joinDate;
     }
   }
 
-  // Set preferences
-  const darkModeCheckbox = document.getElementById("dark-mode-pref");
-  const autoSaveCheckbox = document.getElementById("auto-save-pref");
+  renderPreferences(preferences) {
+    const darkModeCheckbox = document.getElementById("dark-mode-pref");
+    const autoSaveCheckbox = document.getElementById("auto-save-pref");
 
-  if (darkModeCheckbox) {
-    darkModeCheckbox.checked = document
-      .getElementById("app-body")
-      .classList.contains("dark-mode");
-    darkModeCheckbox.addEventListener("change", (e) => {
-      if (e.target.checked) {
-        document.getElementById("app-body").classList.add("dark-mode");
-        localStorage.setItem("eizyGroup_theme", "dark");
-      } else {
-        document.getElementById("app-body").classList.remove("dark-mode");
-        localStorage.setItem("eizyGroup_theme", "light");
-      }
-      updateThemeIcon();
-    });
-  }
-
-  if (autoSaveCheckbox) {
-    const autoSave = localStorage.getItem("eizyGroup_auto_save") !== "false";
-    autoSaveCheckbox.checked = autoSave;
-    autoSaveCheckbox.addEventListener("change", (e) => {
-      localStorage.setItem(
-        "eizyGroup_auto_save",
-        e.target.checked ? "true" : "false"
-      );
-    });
-  }
-
-  // Clear history button
-  const clearHistoryBtn = document.getElementById("clear-history-btn");
-  if (clearHistoryBtn) {
-    clearHistoryBtn.addEventListener("click", clearGroupHistory);
-  }
-}
-
-// ============ CSV Import ============
-
-function initCSVImport() {
-  const csvInput = document.getElementById("csv-import");
-  if (!csvInput) return;
-
-  csvInput.addEventListener("change", handleCSVImport);
-}
-
-function handleCSVImport(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = (event) => {
-    try {
-      const csv = event.target.result;
-      const lines = csv.split("\n").map((line) => line.trim());
-
-      // Extract names (first column or first cell if comma-separated)
-      const names = lines
-        .filter((line) => line.length > 0)
-        .map((line) => {
-          // Handle CSV: take first column (before comma)
-          const parts = line.split(",");
-          return parts[0].trim();
-        })
-        .filter((name) => name.length > 0);
-
-      if (names.length === 0) {
-        showAlert("No valid names found in CSV file.", "error");
-        return;
-      }
-
-      // Populate textarea
-      const textarea = document.getElementById("students-input");
-      if (textarea) {
-        textarea.value = names.join("\n");
-      }
-
-      showAlert(
-        `✓ Successfully imported ${names.length} students from CSV!`,
-        "success"
-      );
-      // Reset file input
-      e.target.value = "";
-    } catch (err) {
-      showAlert("Error parsing CSV file: " + err.message, "error");
-      e.target.value = "";
+    if (darkModeCheckbox) {
+      darkModeCheckbox.checked = preferences.darkMode;
     }
-  };
+    if (autoSaveCheckbox) {
+      autoSaveCheckbox.checked = preferences.autoSave;
+    }
+  }
 
-  reader.readAsText(file);
+  getDarkModeCheckbox() {
+    return document.getElementById("dark-mode-pref");
+  }
+
+  getAutoSaveCheckbox() {
+    return document.getElementById("auto-save-pref");
+  }
+
+  showMessage(message, type = "success") {
+    console.log(`[${type.toUpperCase()}] ${message}`);
+  }
 }
 
-// Expose to global scope
-window.logout = logout;
-window.isLoggedIn = isLoggedIn;
-window.currentUser = () => currentUser;
-window.switchToSignup = switchToSignup;
-window.switchToLogin = switchToLogin;
-window.handleHeroCTA = handleHeroCTA;
-window.handleCTAButton = handleCTAButton;
-window.updateNavigationForLoginState = updateNavigationForLoginState;
+// ============================================================
+// STORAGE MANAGER - Data Persistence
+// ============================================================
+
+/**
+ * StorageManager - Handles all localStorage operations
+ */
+class StorageManager {
+  constructor() {
+    this.PREFIX = "eizyGroup_";
+  }
+
+  // User storage
+  saveUser(user) {
+    const users = this.getUsers();
+    users[user.email] = user.toJSON();
+    localStorage.setItem(this.PREFIX + "users", JSON.stringify(users));
+  }
+
+  getUser(email) {
+    const users = this.getUsers();
+    return users[email] ? User.fromJSON(users[email]) : null;
+  }
+
+  getUsers() {
+    return JSON.parse(localStorage.getItem(this.PREFIX + "users")) || {};
+  }
+
+  userExists(email) {
+    return !!this.getUsers()[email];
+  }
+
+  // Current user storage
+  saveCurrentUser(user) {
+    if (user) {
+      localStorage.setItem(this.PREFIX + "currentUser", JSON.stringify(user));
+    } else {
+      localStorage.removeItem(this.PREFIX + "currentUser");
+    }
+  }
+
+  getCurrentUser() {
+    const user = localStorage.getItem(this.PREFIX + "currentUser");
+    return user ? JSON.parse(user) : null;
+  }
+
+  // History storage
+  saveHistory(history) {
+    localStorage.setItem(
+      this.PREFIX + "history",
+      JSON.stringify(history.map((h) => h.toJSON()))
+    );
+  }
+
+  getHistory() {
+    const history =
+      JSON.parse(localStorage.getItem(this.PREFIX + "history")) || [];
+    return history.map((h) => GroupGeneration.fromJSON(h));
+  }
+
+  // Theme storage
+  saveTheme(theme) {
+    localStorage.setItem(this.PREFIX + "theme", theme);
+  }
+
+  getTheme() {
+    return localStorage.getItem(this.PREFIX + "theme") || "light";
+  }
+
+  // Preferences storage
+  savePreferences(prefs) {
+    localStorage.setItem(this.PREFIX + "preferences", JSON.stringify(prefs));
+  }
+
+  getPreferences() {
+    return JSON.parse(localStorage.getItem(this.PREFIX + "preferences")) || {};
+  }
+
+  // Clear all data
+  clearAll() {
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith(this.PREFIX))
+      .forEach((key) => localStorage.removeItem(key));
+  }
+}
+
+// ============================================================
+// APPLICATION CONTROLLER - Main App Logic
+// ============================================================
+
+/**
+ * Application Controller - Orchestrates all components
+ */
+class ApplicationController {
+  constructor() {
+    // Initialize storage
+    this.storage = new StorageManager();
+
+    // Initialize state
+    this.appState = new AppState();
+    this.loadState();
+
+    // Initialize presenters
+    this.authPresenter = new AuthPresenter(this.storage, this.appState);
+    this.generatorPresenter = new GeneratorPresenter();
+    this.historyPresenter = new HistoryPresenter(this.appState, this.storage);
+    this.settingsPresenter = new SettingsPresenter(this.appState, this.storage);
+
+    // Initialize views
+    this.authView = new AuthView();
+    this.generatorView = new GeneratorView();
+    this.historyView = new HistoryView();
+    this.settingsView = new SettingsView();
+
+    // Initialize UI
+    this.setupEventListeners();
+  }
+
+  /**
+   * Load state from storage
+   */
+  loadState() {
+    const currentUser = this.storage.getCurrentUser();
+    if (currentUser) {
+      this.appState.setCurrentUser(currentUser);
+    }
+
+    const history = this.storage.getHistory();
+    this.appState.groupHistory = history;
+
+    const theme = this.storage.getTheme();
+    this.appState.theme = theme;
+
+    const preferences = this.storage.getPreferences();
+    this.appState.preferences = {
+      ...this.appState.preferences,
+      ...preferences,
+    };
+  }
+
+  /**
+   * Setup all event listeners
+   */
+  setupEventListeners() {
+    // Set copyright year
+    const yearEl = document.getElementById("year");
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    // Update UI based on login state
+    this.updateUIForLoginState();
+
+    // Auth modal controls
+    const modalClose = document.getElementById("modal-close");
+    const modalCancel = document.getElementById("modal-cancel");
+    const modalBackdrop = document.getElementById("modal-backdrop");
+
+    if (modalClose)
+      modalClose.addEventListener("click", () => this.authView.hideLoginForm());
+    if (modalCancel)
+      modalCancel.addEventListener("click", () =>
+        this.authView.hideLoginForm()
+      );
+    if (modalBackdrop)
+      modalBackdrop.addEventListener("click", () =>
+        this.authView.hideLoginForm()
+      );
+
+    const modalCloseSignup = document.getElementById("modal-close-signup");
+    const modalCancelSignup = document.getElementById("modal-cancel-signup");
+    const modalBackdropSignup = document.getElementById(
+      "modal-backdrop-signup"
+    );
+
+    if (modalCloseSignup)
+      modalCloseSignup.addEventListener("click", () =>
+        this.authView.hideSignupForm()
+      );
+    if (modalCancelSignup)
+      modalCancelSignup.addEventListener("click", () =>
+        this.authView.hideSignupForm()
+      );
+    if (modalBackdropSignup)
+      modalBackdropSignup.addEventListener("click", () =>
+        this.authView.hideSignupForm()
+      );
+
+    // Login/Signup form submissions
+    const loginForm = document.getElementById("login-form");
+    if (loginForm) {
+      loginForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        this.handleLogin();
+      });
+    }
+
+    const signupForm = document.getElementById("signup-form");
+    if (signupForm) {
+      signupForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        this.handleSignup();
+      });
+    }
+
+    // Auth links
+    const switchToSignupLink = document.getElementById("switch-to-signup");
+    if (switchToSignupLink) {
+      switchToSignupLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.authView.hideLoginForm();
+        this.authView.showSignupForm();
+      });
+    }
+
+    const switchToLoginLink = document.getElementById("switch-to-login");
+    if (switchToLoginLink) {
+      switchToLoginLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.authView.hideSignupForm();
+        this.authView.showLoginForm();
+      });
+    }
+
+    // Nav login button
+    const navLoginBtn = document.getElementById("nav-login");
+    if (navLoginBtn) {
+      navLoginBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (!this.appState.isLoggedIn()) {
+          this.authView.showLoginForm();
+        }
+      });
+    }
+
+    // Generate button (dashboard)
+    const genBtn = document.getElementById("generate-btn");
+    if (genBtn) {
+      genBtn.addEventListener("click", () => this.handleGenerate());
+    }
+
+    // Export CSV button
+    const exportCsvBtn = document.getElementById("export-csv-btn");
+    if (exportCsvBtn) {
+      exportCsvBtn.addEventListener("click", () => this.handleExportCSV());
+    }
+
+    // Theme toggle
+    const themeToggle = document.getElementById("theme-toggle");
+    if (themeToggle) {
+      themeToggle.addEventListener("click", () => this.toggleTheme());
+    }
+
+    // Initialize theme
+    this.initializeTheme();
+
+    // CSV import
+    const csvInput = document.getElementById("csv-import");
+    if (csvInput) {
+      csvInput.addEventListener("change", (e) => this.handleCSVImport(e));
+    }
+  }
+
+  /**
+   * Handle login
+   */
+  handleLogin() {
+    const creds = this.authView.getLoginCredentials();
+    const result = this.authPresenter.login(creds.email, creds.password);
+
+    if (result.success) {
+      this.authView.showMessage("login", result.message, "success");
+      this.storage.saveCurrentUser(result.user);
+      setTimeout(() => {
+        this.authView.hideLoginForm();
+        window.location.href = "dashboard.html";
+      }, 1500);
+    } else {
+      this.authView.showMessage("login", result.message, "error");
+    }
+  }
+
+  /**
+   * Handle signup
+   */
+  handleSignup() {
+    const data = this.authView.getSignupData();
+    const result = this.authPresenter.signup(
+      data.name,
+      data.email,
+      data.password,
+      data.confirmPassword
+    );
+
+    if (result.success) {
+      this.authView.showMessage("signup", result.message, "success");
+      this.storage.saveCurrentUser(result.user);
+      setTimeout(() => {
+        this.authView.hideSignupForm();
+        window.location.href = "dashboard.html";
+      }, 1500);
+    } else {
+      this.authView.showMessage("signup", result.message, "error");
+    }
+  }
+
+  /**
+   * Handle group generation
+   */
+  handleGenerate() {
+    const studentInput = this.generatorView.getStudentInput();
+    const config = this.generatorView.getGroupConfig();
+
+    const result = this.generatorPresenter.generateGroups(
+      studentInput,
+      config.numGroups,
+      config.perGroup
+    );
+
+    if (!result.success) {
+      this.generatorView.showAlert(result.error, "error");
+      return;
+    }
+
+    this.generatorView.renderGroups(result.groups);
+    this.generatorView.showAlert(result.message, "success");
+    this.generatorView.showExportButton(true);
+
+    // Save to history if auto-save enabled
+    if (this.appState.preferences.autoSave) {
+      const names = studentInput
+        .split("\n")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+      const gen = this.historyPresenter.addGeneration(
+        names,
+        result.groups,
+        config.numGroups,
+        config.perGroup
+      );
+    }
+
+    // Store current groups for export
+    this.appState.setCurrentGroups(result.groups);
+  }
+
+  /**
+   * Handle CSV export
+   */
+  handleExportCSV() {
+    const groups = this.appState.getCurrentGroups();
+    if (!groups) {
+      this.generatorView.showAlert(
+        "No groups to export. Generate groups first.",
+        "error"
+      );
+      return;
+    }
+
+    const csv = this.generatorPresenter.exportAsCSV(groups);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+
+    link.setAttribute("href", url);
+    link.setAttribute("download", `groups_${new Date().getTime()}.csv`);
+    link.style.visibility = "hidden";
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    this.generatorView.showAlert(
+      "✓ Groups exported successfully as CSV!",
+      "success"
+    );
+  }
+
+  /**
+   * Handle CSV import
+   */
+  handleCSVImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const csv = event.target.result;
+        const names = this.generatorPresenter.parseCSV(csv);
+
+        if (names.length === 0) {
+          this.generatorView.showAlert(
+            "No valid names found in CSV file.",
+            "error"
+          );
+          return;
+        }
+
+        this.generatorView.setStudentInput(names.join("\n"));
+        this.generatorView.showAlert(
+          `✓ Successfully imported ${names.length} students from CSV!`,
+          "success"
+        );
+        e.target.value = "";
+      } catch (err) {
+        this.generatorView.showAlert(
+          `Error parsing CSV file: ${err.message}`,
+          "error"
+        );
+        e.target.value = "";
+      }
+    };
+
+    reader.readAsText(file);
+  }
+
+  /**
+   * Update UI based on login state
+   */
+  updateUIForLoginState() {
+    const isLogged = this.appState.isLoggedIn();
+    this.authView.updateNavigation(isLogged);
+    this.authView.updateCTAButtons(isLogged);
+  }
+
+  /**
+   * Toggle theme
+   */
+  toggleTheme() {
+    const body = document.getElementById("app-body");
+    if (!body) return;
+
+    body.classList.toggle("dark-mode");
+    const isDark = body.classList.contains("dark-mode");
+    const theme = isDark ? "dark" : "light";
+
+    this.settingsPresenter.setTheme(theme);
+    this.updateThemeIcon();
+  }
+
+  /**
+   * Initialize theme
+   */
+  initializeTheme() {
+    const theme = this.appState.theme;
+    const body = document.getElementById("app-body");
+
+    if (theme === "dark" && body) {
+      body.classList.add("dark-mode");
+    }
+
+    this.updateThemeIcon();
+  }
+
+  /**
+   * Update theme icon
+   */
+  updateThemeIcon() {
+    const body = document.getElementById("app-body");
+    const icon = document.getElementById("theme-icon");
+    if (icon) {
+      icon.textContent = body?.classList.contains("dark-mode") ? "☀️" : "🌙";
+    }
+  }
+
+  /**
+   * Load generation from history
+   */
+  loadFromHistory(id) {
+    const entry = this.historyPresenter.loadGeneration(id);
+    if (!entry) return;
+
+    this.switchTab("generator");
+    this.generatorView.setStudentInput(
+      entry.groups.map((g) => g.join("\n")).join("\n")
+    );
+    this.generatorView.renderGroups(entry.groups);
+    this.appState.setCurrentGroups(entry.groups);
+    this.generatorView.showExportButton(true);
+  }
+
+  /**
+   * Delete from history
+   */
+  deleteFromHistory(id) {
+    if (confirm("Delete this generation from history?")) {
+      this.historyPresenter.deleteGeneration(id);
+      this.renderHistory();
+    }
+  }
+
+  /**
+   * Switch tab
+   */
+  switchTab(tabName) {
+    const tabContents = document.querySelectorAll(".tab-content");
+    tabContents.forEach((tab) => tab.classList.remove("active"));
+
+    const tabBtns = document.querySelectorAll(".tab-btn");
+    tabBtns.forEach((btn) => btn.classList.remove("active"));
+
+    const selectedTab = document.getElementById(tabName);
+    if (selectedTab) selectedTab.classList.add("active");
+
+    const selectedBtn = document.querySelector(`[data-tab="${tabName}"]`);
+    if (selectedBtn) selectedBtn.classList.add("active");
+
+    if (tabName === "history") {
+      this.renderHistory();
+    } else if (tabName === "settings") {
+      this.initializeSettings();
+    }
+  }
+
+  /**
+   * Render history
+   */
+  renderHistory() {
+    const history = this.historyPresenter.getHistory();
+    this.historyView.renderHistory(history);
+  }
+
+  /**
+   * Initialize settings
+   */
+  initializeSettings() {
+    const user = this.appState.getCurrentUser();
+    this.settingsView.renderUserInfo(user);
+    this.settingsView.renderPreferences(this.appState.preferences);
+
+    const darkModeCheckbox = this.settingsView.getDarkModeCheckbox();
+    if (darkModeCheckbox) {
+      darkModeCheckbox.removeEventListener("change", this.onDarkModeChange);
+      darkModeCheckbox.addEventListener("change", (e) => {
+        this.settingsPresenter.updatePreference("darkMode", e.target.checked);
+        this.toggleTheme();
+      });
+    }
+
+    const autoSaveCheckbox = this.settingsView.getAutoSaveCheckbox();
+    if (autoSaveCheckbox) {
+      autoSaveCheckbox.removeEventListener("change", this.onAutoSaveChange);
+      autoSaveCheckbox.addEventListener("change", (e) => {
+        this.settingsPresenter.updatePreference("autoSave", e.target.checked);
+      });
+    }
+
+    const clearHistoryBtn = document.getElementById("clear-history-btn");
+    if (clearHistoryBtn) {
+      clearHistoryBtn.removeEventListener("click", this.onClearHistory);
+      clearHistoryBtn.addEventListener("click", () => {
+        if (
+          confirm("Are you sure? This will delete all saved group generations.")
+        ) {
+          this.historyPresenter.clearHistory();
+          this.renderHistory();
+          this.settingsView.showMessage(
+            "History cleared successfully.",
+            "success"
+          );
+        }
+      });
+    }
+  }
+
+  /**
+   * Logout
+   */
+  logout() {
+    this.authPresenter.logout();
+    this.storage.saveCurrentUser(null);
+    window.location.href = "index.html";
+  }
+
+  /**
+   * Initialize dashboard
+   */
+  initializeDashboard() {
+    if (!this.appState.isLoggedIn()) {
+      window.location.href = "index.html";
+      return;
+    }
+
+    const user = this.appState.getCurrentUser();
+    const nameDisplay = document.getElementById("user-name-display");
+    const joinedDisplay = document.getElementById("user-joined-display");
+
+    if (nameDisplay && user) {
+      nameDisplay.textContent = user.name || "User";
+    }
+
+    if (joinedDisplay) {
+      const joinDate = user.joinDate
+        ? new Date(user.joinDate).toLocaleDateString()
+        : new Date().toLocaleDateString();
+      joinedDisplay.textContent = `Joined: ${joinDate}`;
+    }
+
+    const logoutBtn = document.getElementById("nav-logout-btn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.logout();
+      });
+    }
+
+    const tabBtns = document.querySelectorAll(".tab-btn");
+    tabBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const tab = btn.getAttribute("data-tab");
+        if (tab !== "logout") {
+          this.switchTab(tab);
+        }
+      });
+    });
+
+    this.switchTab("generator");
+  }
+}
+
+// ============================================================
+// INITIALIZATION
+// ============================================================
+
+let eApp; // Global app instance
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Initialize the application
+  eApp = new ApplicationController();
+
+  // Check if on dashboard
+  if (document.getElementById("dashboard-root")) {
+    eApp.initializeDashboard();
+  }
+
+  // Add animation styles if not present
+  if (!document.querySelector("style[data-alert-animations]")) {
+    const style = document.createElement("style");
+    style.setAttribute("data-alert-animations", "true");
+    style.textContent = `
+      @keyframes slideInRight {
+        from {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      @keyframes slideOutRight {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+});
+
+// ============================================================
+// GLOBAL EXPORTS FOR BACKWARD COMPATIBILITY
+// ============================================================
+
+window.logout = () => eApp?.logout();
+window.isLoggedIn = () => eApp?.appState.isLoggedIn();
+window.currentUser = () => eApp?.appState.getCurrentUser();
+window.switchToSignup = () => eApp?.authView.showSignupForm();
+window.switchToLogin = () => eApp?.authView.showLoginForm();
+window.switchTab = (tab) => eApp?.switchTab(tab);
+window.handleHeroCTA = () => {
+  if (eApp?.appState.isLoggedIn()) {
+    window.location.href = "dashboard.html";
+  } else {
+    eApp?.authView.showSignupForm();
+  }
+};
+window.handleCTAButton = () => {
+  if (eApp?.appState.isLoggedIn()) {
+    window.location.href = "dashboard.html";
+  } else {
+    eApp?.authView.showSignupForm();
+  }
+};

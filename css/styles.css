@@ -975,7 +975,7 @@ body.dark-mode .danger-zone {
   font-weight: 600;
   margin-bottom: 10px;
   font-size: 0.95rem;
-  color: #;
+  color: #3f51b5;
 }
 .input-card textarea {
   width: 100%;
@@ -1085,7 +1085,7 @@ body.dark-mode .danger-zone {
 
 .group-card li {
   padding: 8px 0;
-  color: #f3f3f3;
+  color: #3f51b5;
   font-size: 0.95rem;
   border-bottom: 1px solid var(--border);
   word-break: break-word;
