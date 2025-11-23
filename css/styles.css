@@ -33,6 +33,16 @@ body.dark-mode {
   --muted: #9ca3af;
   --text: #f7fbff;
   --border: rgba(255, 255, 255, 0.1);
+
+  .hero-text h1 {
+    color: #fff;
+  }
+  .benefit-item h3 {
+    color: #fff;
+  }
+  .container h2 {
+    color: #fdfdfd;
+  }
 }
 .topic {
   color: #3f51b5;
@@ -413,11 +423,11 @@ body.dark-mode .btn-icon:hover {
 
 /* Hero section */
 .hero-section {
-  min-height: 100vh;
+  min-height: 70vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 100px 0;
+  padding: 40px 0;
   background: linear-gradient(
     135deg,
     rgba(30, 111, 179, 0.06),
@@ -535,16 +545,18 @@ body.dark-mode .btn-icon:hover {
 .benefits-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 32px;
+  gap: 40px;
 }
 .benefit-item {
   padding: 20px 0;
+  text-align: center;
 }
 
 .benefit-item h3 {
   margin: 0 0 8px;
   font-size: 1.15rem;
   color: #0f1724;
+  text-align: center;
 }
 .benefit-item p {
   margin: 0;
