@@ -3137,7 +3137,7 @@ body.dark-mode .field select {
   background-position: contain;
   background-size: 100%;
   /* border-bottom-left-radius: 100px; */
-  border-bottom-right-radius: 900px;
+  border-bottom-right-radius: 400px;
 
   display: flex;
   justify-content: center;
