@@ -3093,6 +3093,20 @@ body.dark-mode .field select {
     padding-left: 1rem;
     padding-right: 1rem;
   }
+  .about-hero-section {
+    height: 70vh;
+    background: linear-gradient(
+      90deg,
+      rgb(26, 35, 50),
+      rgba(176, 127, 21, 0.681)
+    ) !important;
+
+    border-bottom-right-radius: 900px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 @media (max-width: 480px) {
@@ -3100,13 +3114,27 @@ body.dark-mode .field select {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
   }
+  .about-hero-section {
+    height: 70vh;
+    background: linear-gradient(
+      90deg,
+      rgb(26, 35, 50),
+      rgba(176, 127, 21, 0.681)
+    );
+
+    border-bottom-right-radius: 900px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 .about-hero-section {
   height: 70vh;
   background: linear-gradient(90deg, rgb(26, 35, 50), rgba(176, 127, 21, 0.681)),
     url("./ab.jpg") no-repeat;
-  background-position: cover;
+  background-position: contain;
   background-size: 100%;
   /* border-bottom-left-radius: 100px; */
   border-bottom-right-radius: 900px;
@@ -3118,7 +3146,12 @@ body.dark-mode .field select {
 .about-hero-section h1 {
   font-size: clamp(25px, 4vw, 60px);
   font-weight: 900;
+  color: #fff;
 }
 .about-hero-section h1 span {
   color: #0f1724;
+}
+
+.about-hero-section p {
+  color: #fdfdfd !important;
 }
