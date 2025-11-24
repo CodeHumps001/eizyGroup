@@ -3101,3 +3101,24 @@ body.dark-mode .field select {
     padding-right: 0.75rem;
   }
 }
+
+.about-hero-section {
+  height: 70vh;
+  background: linear-gradient(90deg, rgb(26, 35, 50), rgba(176, 127, 21, 0.681)),
+    url("./ab.jpg") no-repeat;
+  background-position: cover;
+  background-size: 100%;
+  /* border-bottom-left-radius: 100px; */
+  border-bottom-right-radius: 900px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.about-hero-section h1 {
+  font-size: clamp(25px, 4vw, 60px);
+  font-weight: 900;
+}
+.about-hero-section h1 span {
+  color: #0f1724;
+}
